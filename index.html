@@ -163,8 +163,8 @@ label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(-
 <!-- Bank soalan. Sunting di sini, atau pindahkan ke Google Sheet kemudian. -->
 <script id="bank" type="application/json">{
  "config": {
-  "scoreUrl": "https://script.google.com/macros/s/AKfycbxCXixYyipTcBM2A0LZ28_0ux-aRZy8usIanzsWc8wSLj012HDKxkatwWL9WkZUJaJD0Q/exec",
-  "kunci": "bazli123456",
+  "scoreUrl": "",
+  "kunci": "",
   "roundSize": 10
  },
  "topics": [
@@ -228,8 +228,7 @@ label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(-
      "en": "table",
      "zh": "桌子",
      "py": "zhuōzi",
-     "g": "benda",
-     "e": "🪑"
+     "g": "benda"
     },
     {
      "bm": "cawan",
@@ -3220,8 +3219,7 @@ label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(-
      "en": "seller",
      "zh": "卖家，售货员",
      "py": "màijiā",
-     "g": "harga",
-     "e": "🧑‍💼"
+     "g": "harga"
     },
     {
      "bm": "ayam",
@@ -3275,8 +3273,7 @@ label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(-
      "en": "flour",
      "zh": "面粉",
      "py": "miànfěn",
-     "g": "barang",
-     "e": "🌾"
+     "g": "barang"
     },
     {
      "bm": "beras",
@@ -3627,8 +3624,7 @@ label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(-
      "en": "fried rice",
      "zh": "炒饭",
      "py": "chǎofàn",
-     "g": "makanan",
-     "e": "🍛"
+     "g": "makanan"
     },
     {
      "bm": "ayam goreng",
@@ -4090,8 +4086,7 @@ label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(-
      "en": "Chinese New Year",
      "zh": "农历新年",
      "py": "nónglì xīnnián",
-     "g": "perayaan",
-     "e": "🧧"
+     "g": "perayaan"
     },
     {
      "bm": "Deepavali",
@@ -4122,8 +4117,7 @@ label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(-
      "en": "Gawai festival in Sarawak",
      "zh": "砂拉越达雅节",
      "py": "shālāyuè dáyǎjié",
-     "g": "perayaan",
-     "e": "🌾"
+     "g": "perayaan"
     },
     {
      "bm": "Wesak",
@@ -4138,8 +4132,7 @@ label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(-
      "en": "rice cake wrapped in leaves",
      "zh": "马来粽",
      "py": "mǎláizòng",
-     "g": "makanan",
-     "e": "🍙"
+     "g": "makanan"
     },
     {
      "bm": "rendang",
@@ -4607,8 +4600,7 @@ label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(-
      "en": "waterfall",
      "zh": "瀑布",
      "py": "pùbù",
-     "g": "tempat",
-     "e": "💦"
+     "g": "tempat"
     },
     {
      "bm": "hutan",
@@ -5183,7 +5175,7 @@ function renderPlay(){
   if(q.type==='type') body=`<input type="text" id="ans" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Jawapan anda"><div class="row"><button class="btn" data-act="check">Semak</button></div>`;
   if(q.type==='order'){order={pool:q.tiles.map((t,i)=>({t,i})),ans:[]};
     body=`<div class="tiles" id="ans-area" aria-label="Ayat anda"></div><div class="tiles pool" id="pool-area"></div><div class="row"><button class="btn" data-act="check">Semak</button><button class="btn ghost" data-act="reset">Set semula</button></div>`}
-  if(q.type==='speak') body=`<div class="row"><button class="btn blue" data-act="listen" id="micbtn">🎤 Tekan dan sebut</button></div><div id="heard" class="note" role="status"></div>`;
+  if(q.type==='speak') body=`<div class="row"><button class="btn blue" data-act="listen" id="micbtn">🎤 Tekan dan sebut</button><button class="btn ghost" data-act="totype">Tukar kepada menulis</button></div><div id="heard" class="note" role="status"></div>`;
   app.innerHTML=`
    <div class="bar"><div class="me"><span class="wk" style="margin:0">Tahap ${S.level}</span><b>${esc(S.topic.title)}</b></div>
      <button class="btn ghost sm" data-act="home">Keluar</button></div>
@@ -5235,13 +5227,16 @@ function checkOrder(q){
 }
 function listen(q){
   const btn=$('#micbtn'),out=$('#heard');
-  const r=new SR();r.lang='ms-MY';r.interimResults=false;r.maxAlternatives=3;
-  let finished=false;
+  let r;
+  try{r=new SR()}catch(e){out.textContent='Mikrofon tidak dapat dibuka. Tekan Tukar kepada menulis.';return}
+  r.lang='ms-MY';r.interimResults=false;r.maxAlternatives=3;
+  let finished=false,timer=null;
   btn.disabled=true;out.textContent='Mendengar... sebut sekarang.';
   const end=(err,alts)=>{
-    if(finished)return;finished=true;btn.disabled=false;
+    if(finished)return;finished=true;clearTimeout(timer);btn.disabled=false;
     if(err){
-      if(err==='no-speech'||err==='aborted'){out.textContent='Tidak dengar apa-apa. Tekan butang mikrofon dan cuba lagi.';return}
+      if(err==='no-speech'||err==='aborted'){out.textContent='Tidak dengar apa-apa. Tekan butang mikrofon dan cuba lagi, atau tekan Tukar kepada menulis.';return}
+      if(err==='timeout'){out.textContent='Mikrofon tidak memberi jawapan. Cuba sekali lagi, atau tekan Tukar kepada menulis.';return}
       toTyping(q);return;
     }
     const best=alts.map(a=>a.trim());
@@ -5257,6 +5252,9 @@ function listen(q){
   r.onresult=e=>end(null,Array.from(e.results[0]).map(a=>a.transcript));
   r.onerror=e=>end(e.error||'error');
   r.onend=()=>end('no-speech');
+  // Pada sesetengah telefon, pengecaman suara langsung tidak menjawab.
+  // Tanpa pengawal masa ini, butang akan terkunci dan pelajar tersekat.
+  timer=setTimeout(()=>{try{r.abort()}catch(e){}try{r.stop()}catch(e){}end('timeout')},10000);
   try{r.start()}catch(e){end('error')}
 }
 function toTyping(q){
@@ -5322,6 +5320,7 @@ document.addEventListener('click',e=>{
   if(a==='untile'){const x=order.ans.splice(+el.dataset.k,1)[0];order.pool.push(x);drawOrder();return}
   if(a==='reset'){order.pool=order.pool.concat(order.ans);order.ans=[];drawOrder();return}
   if(a==='listen'){listen(q);return}
+  if(a==='totype'){toTyping(q);return}
   if(a==='next'){next();return}
 });
 document.addEventListener('keydown',e=>{
