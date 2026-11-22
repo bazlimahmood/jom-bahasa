@@ -1,0 +1,5341 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jom Bahasa · SMB11002</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Warna UniMAP: putih utama, biru dan kuning sebagai penyerlah. Tukar di sini sahaja. */
+  --blue:#0B4EA2; --blue-d:#07356F; --blue-l:#EAF2FC; --blue-x:#CFE2F7;
+  --yellow:#FFC20E; --yellow-d:#D29400; --yellow-l:#FFF6DB;
+  --ink:#16233A; --mute:#68788E; --line:#E3EAF4; --white:#fff;
+  --ok:#17A06B; --ok-l:#E3F7EF; --ok-x:#B9E8D4;
+  --no:#E0483D; --no-l:#FDECEA; --no-x:#F7C9C5;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--white); color:var(--ink);
+  font-family:Nunito,ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  font-weight:700; line-height:1.45; min-height:100vh;
+}
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:280px;z-index:-1;
+  background:radial-gradient(130% 100% at 50% 0,var(--blue-l) 0,#fff 72%)}
+.wrap{max-width:760px;margin:0 auto;padding:8px 16px 60px}
+h1,h2,h3{margin:0;line-height:1.15}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+
+/* Butang tebal bergaya permainan */
+.btn{border:0;border-radius:18px;padding:14px 24px;font-size:18px;font-weight:900;cursor:pointer;
+  background:var(--yellow);color:var(--ink);box-shadow:0 4px 0 var(--yellow-d);
+  transition:transform .08s ease,box-shadow .08s ease;min-height:52px}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--yellow-d)}
+.btn.blue{background:var(--blue);color:#fff;box-shadow:0 4px 0 var(--blue-d)}
+.btn.blue:active:not(:disabled){box-shadow:0 1px 0 var(--blue-d)}
+.btn.ghost{background:#fff;color:var(--blue);box-shadow:0 0 0 2px var(--line) inset,0 3px 0 var(--line)}
+.btn.ghost:active{box-shadow:0 0 0 2px var(--line) inset,0 1px 0 var(--line)}
+.btn.sm{padding:9px 16px;font-size:14px;min-height:0;border-radius:14px}
+.btn:disabled{opacity:.45;box-shadow:none;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+
+/* Bar atas */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px 4px}
+.me{display:flex;align-items:center;gap:9px;min-width:0}
+.av{flex:0 0 38px;width:38px;height:38px;border-radius:50%;background:var(--yellow);color:var(--blue-d);
+  display:grid;place-items:center;font-weight:900;font-size:17px}
+.me b{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.help{display:flex;align-items:center;gap:7px}
+.help span{font-size:12px;font-weight:800;color:var(--mute)}
+.seg{display:inline-flex;background:var(--blue-l);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--blue-d);font-size:13px;font-weight:800;
+  padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--blue);color:#fff}
+
+/* Bar kemajuan bersegmen */
+.prog{display:flex;gap:5px;margin:14px 2px 16px}
+.prog i{flex:1;height:10px;border-radius:999px;background:var(--line);transition:background .2s}
+.prog i.done{background:var(--yellow)}
+.prog i.bad{background:var(--no)}
+.prog i.now{background:var(--blue)}
+
+/* Kad soalan */
+.qcard{background:var(--blue);color:#fff;border-radius:26px;padding:22px 20px;margin:2px 0 18px;
+  box-shadow:0 12px 26px rgba(11,78,162,.22)}
+.qcard .chip{display:inline-block;background:rgba(255,255,255,.2);font-size:13px;font-weight:900;
+  padding:5px 13px;border-radius:999px}
+.qcard .chip.retry{background:var(--yellow);color:var(--blue-d)}
+.qcard .ask{font-size:16px;font-weight:700;opacity:.92;margin-top:12px}
+.qcard .emoji{font-size:54px;line-height:1;margin-top:8px}
+.qcard .big{font-size:clamp(32px,9vw,46px);font-weight:900;letter-spacing:-.02em;margin:8px 0 2px;
+  line-height:1.1;overflow-wrap:anywhere}
+.qcard .sub{font-size:17px;font-weight:700;opacity:.9}
+.chipbtn{border:0;border-radius:999px;padding:9px 16px;font-size:15px;font-weight:800;cursor:pointer;
+  background:#fff;color:var(--blue);box-shadow:0 3px 0 rgba(0,0,0,.14)}
+.chipbtn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.14)}
+.chipbtn.soft{background:rgba(255,255,255,.18);color:#fff;box-shadow:none;font-weight:700}
+.dlg{background:rgba(255,255,255,.14);border-radius:16px;padding:12px 14px;margin:14px 0 2px;font-size:16px}
+.dlg p{margin:6px 0}
+.dlg b{color:var(--yellow)}
+#helptext:not(:empty){background:rgba(255,255,255,.14);border-radius:14px;padding:10px 13px;margin-top:10px;
+  font-size:16px;font-weight:700}
+
+/* Pilihan jawapan */
+.opt{display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:18px;
+  background:#fff;color:var(--ink);font-size:18px;font-weight:800;padding:15px 18px;margin:10px 0;
+  min-height:58px;cursor:pointer;box-shadow:0 3px 0 var(--line);transition:border-color .12s,box-shadow .12s}
+.opt:hover:not(:disabled){border-color:var(--blue);box-shadow:0 3px 0 var(--blue-x)}
+.opt:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--blue-x)}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--ok-l);border-color:var(--ok);box-shadow:0 3px 0 var(--ok-x)}
+.opt.no{background:var(--no-l);border-color:var(--no);box-shadow:0 3px 0 var(--no-x)}
+
+input[type=text]{width:100%;font:inherit;font-weight:800;font-size:19px;padding:15px 18px;
+  border:2px solid var(--line);border-radius:18px;background:#fff;color:var(--ink);box-shadow:0 3px 0 var(--line)}
+input[type=text]:focus{border-color:var(--blue);outline:none}
+label{display:block;font-weight:800;font-size:15px;margin:14px 0 6px;color:var(--mute)}
+
+.fb{border-radius:18px;padding:14px 16px;margin:14px 0;font-size:17px;font-weight:800}
+.fb.ok{background:var(--ok-l);color:#0B6B47;box-shadow:0 3px 0 var(--ok-x)}
+.fb.no{background:var(--no-l);color:#9C2A21;box-shadow:0 3px 0 var(--no-x)}
+
+/* Susun ayat */
+.tiles{display:flex;flex-wrap:wrap;gap:8px;min-height:60px;padding:10px;border-radius:18px;
+  background:var(--blue-l);margin:10px 0}
+.tiles.pool{background:#fff;border:2px dashed var(--blue-x)}
+.tile{border:2px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);
+  font-size:18px;font-weight:800;padding:9px 14px;cursor:pointer;box-shadow:0 3px 0 var(--line)}
+.tile:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+
+/* Kad topik */
+.hero{margin:6px 2px 18px;display:flex;gap:14px;align-items:center}
+.hero h1{font-size:clamp(25px,6.5vw,33px);font-weight:900;letter-spacing:-.02em}
+.hero p{margin:5px 0 0;font-size:15px;font-weight:700;color:var(--mute)}
+.topics{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:640px){.topics{grid-template-columns:1fr 1fr}}
+.tcard{background:#fff;border:2px solid var(--line);border-radius:24px;padding:16px;box-shadow:0 4px 0 var(--line)}
+.tcard .head{display:flex;gap:12px;align-items:flex-start}
+.tcard .ic{flex:0 0 54px;width:54px;height:54px;border-radius:18px;background:var(--blue-l);
+  display:grid;place-items:center;font-size:28px}
+.wk{display:inline-block;white-space:nowrap;font-size:11px;font-weight:900;color:var(--blue);background:var(--blue-l);
+  padding:3px 9px;border-radius:999px;margin-bottom:5px;letter-spacing:.02em}
+.tcard h3{font-size:18px;font-weight:900}
+.tcard .rk{font-size:14px;font-weight:700;color:var(--mute);margin-top:5px}
+.lv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.lv button{border:0;border-radius:15px;background:var(--blue-l);color:var(--blue-d);
+  font-size:14px;font-weight:900;padding:9px 3px;cursor:pointer;box-shadow:0 3px 0 var(--blue-x)}
+.lv button:hover{background:var(--yellow-l);box-shadow:0 3px 0 var(--yellow)}
+.lv button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--blue-x)}
+.lv .st{display:block;font-size:13px;color:var(--yellow-d);letter-spacing:2px;min-height:17px;line-height:1}
+.lv small{display:block;font-size:11px;font-weight:700;color:var(--mute)}
+.note{font-size:13px;font-weight:700;color:var(--mute);margin:16px 2px;line-height:1.5}
+.note.box{background:var(--blue-l);color:var(--blue-d);border-radius:18px;padding:13px 16px}
+
+/* Skrin markah */
+.score{text-align:center;padding:6px 0 2px}
+.ring{width:160px;height:160px;margin:0 auto;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--yellow) calc(var(--p) * 3.6deg),var(--blue-l) 0)}
+.ring b{width:126px;height:126px;border-radius:50%;background:#fff;display:grid;place-items:center;
+  font-size:38px;font-weight:900;color:var(--blue-d)}
+.stars{font-size:42px;letter-spacing:6px;color:var(--yellow);margin-top:12px;line-height:1}
+.score p{margin:8px 0 0;font-size:16px;font-weight:700;color:var(--mute)}
+.bar2{display:grid;grid-template-columns:72px 1fr 44px;gap:10px;align-items:center;margin:10px 2px;
+  font-size:15px;font-weight:800}
+.bar2 i{display:block;height:12px;border-radius:999px;background:var(--blue-l);overflow:hidden}
+.bar2 i b{display:block;height:100%;background:var(--blue);border-radius:999px}
+.bar2 em{font-style:normal;color:var(--mute);text-align:right}
+
+@media (prefers-reduced-motion:no-preference){
+  .qcard{animation:pop .3s cubic-bezier(.2,.9,.3,1.25)}
+  @keyframes pop{from{transform:scale(.96) translateY(8px);opacity:0}to{transform:none;opacity:1}}
+  .stars{animation:bump .55s cubic-bezier(.2,.9,.3,1.5)}
+  @keyframes bump{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<!-- Bank soalan. Sunting di sini, atau pindahkan ke Google Sheet kemudian. -->
+<script id="bank" type="application/json">{
+ "config": {
+  "scoreUrl": "https://script.google.com/macros/s/AKfycbxCXixYyipTcBM2A0LZ28_0ux-aRZy8usIanzsWc8wSLj012HDKxkatwWL9WkZUJaJD0Q/exec",
+  "kunci": "bazli123456",
+  "roundSize": 10
+ },
+ "topics": [
+  {
+   "id": "T1",
+   "emoji": "🔤",
+   "minggu": 2,
+   "title": "Sistem Abjad dan Sebutan",
+   "ringkas": "Huruf vokal, konsonan, diftong dan suku kata.",
+   "words": [
+    {
+     "bm": "ayam",
+     "en": "chicken",
+     "zh": "鸡",
+     "py": "jī",
+     "g": "benda",
+     "e": "🐔"
+    },
+    {
+     "bm": "ikan",
+     "en": "fish",
+     "zh": "鱼",
+     "py": "yú",
+     "g": "benda",
+     "e": "🐟"
+    },
+    {
+     "bm": "ubat",
+     "en": "medicine",
+     "zh": "药",
+     "py": "yào",
+     "g": "benda",
+     "e": "💊"
+    },
+    {
+     "bm": "epal",
+     "en": "apple",
+     "zh": "苹果",
+     "py": "píngguǒ",
+     "g": "benda",
+     "e": "🍎"
+    },
+    {
+     "bm": "buku",
+     "en": "book",
+     "zh": "书",
+     "py": "shū",
+     "g": "benda",
+     "e": "📖"
+    },
+    {
+     "bm": "nasi",
+     "en": "cooked rice",
+     "zh": "米饭",
+     "py": "mǐfàn",
+     "g": "benda",
+     "e": "🍚"
+    },
+    {
+     "bm": "meja",
+     "en": "table",
+     "zh": "桌子",
+     "py": "zhuōzi",
+     "g": "benda",
+     "e": "🪑"
+    },
+    {
+     "bm": "cawan",
+     "en": "cup",
+     "zh": "杯子",
+     "py": "bēizi",
+     "g": "benda",
+     "e": "☕"
+    },
+    {
+     "bm": "pinggan",
+     "en": "plate",
+     "zh": "盘子",
+     "py": "pánzi",
+     "g": "benda",
+     "e": "🍽️"
+    },
+    {
+     "bm": "gelas",
+     "en": "drinking glass",
+     "zh": "玻璃杯",
+     "py": "bōlí bēi",
+     "g": "benda",
+     "e": "🥛"
+    },
+    {
+     "bm": "kereta",
+     "en": "car",
+     "zh": "汽车",
+     "py": "qìchē",
+     "g": "benda",
+     "e": "🚗"
+    },
+    {
+     "bm": "kedai",
+     "en": "shop",
+     "zh": "商店",
+     "py": "shāngdiàn",
+     "g": "diftong",
+     "e": "🏪"
+    },
+    {
+     "bm": "sungai",
+     "en": "river",
+     "zh": "河",
+     "py": "hé",
+     "g": "diftong",
+     "e": "🏞️"
+    },
+    {
+     "bm": "pulau",
+     "en": "island",
+     "zh": "岛",
+     "py": "dǎo",
+     "g": "diftong",
+     "e": "🏝️"
+    },
+    {
+     "bm": "pisau",
+     "en": "knife",
+     "zh": "刀",
+     "py": "dāo",
+     "g": "diftong",
+     "e": "🔪"
+    },
+    {
+     "bm": "bunga",
+     "en": "flower",
+     "zh": "花",
+     "py": "huā",
+     "g": "bunyi",
+     "e": "🌺"
+    },
+    {
+     "bm": "nyamuk",
+     "en": "mosquito",
+     "zh": "蚊子",
+     "py": "wénzi",
+     "g": "bunyi",
+     "e": "🦟"
+    },
+    {
+     "bm": "syarikat",
+     "en": "company",
+     "zh": "公司",
+     "py": "gōngsī",
+     "g": "bunyi",
+     "e": "🏢"
+    },
+    {
+     "bm": "makan",
+     "en": "eat",
+     "zh": "吃",
+     "py": "chī",
+     "g": "kerja"
+    },
+    {
+     "bm": "baca",
+     "en": "read",
+     "zh": "读",
+     "py": "dú",
+     "g": "kerja"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Saya makan nasi.",
+     "en": "I eat rice.",
+     "zh": "我吃米饭。"
+    },
+    {
+     "bm": "Ayam itu makan di luar.",
+     "en": "That chicken eats outside.",
+     "zh": "那只鸡在外面吃东西。"
+    },
+    {
+     "bm": "Ibu memotong daging dengan pisau.",
+     "en": "Mother cuts the meat with a knife.",
+     "zh": "妈妈用刀切肉。",
+     "cloze": "pisau",
+     "opts": [
+      "pisau",
+      "pulau",
+      "pantai"
+     ]
+    },
+    {
+     "bm": "Kami melawat sebuah pulau yang cantik.",
+     "en": "We visited a beautiful island.",
+     "zh": "我们参观了一个美丽的岛屿。",
+     "cloze": "pulau",
+     "opts": [
+      "pulau",
+      "pisau",
+      "pantai"
+     ]
+    },
+    {
+     "bm": "Saya membeli buku di kedai.",
+     "en": "I buy books at the shop.",
+     "zh": "我在商店买书。",
+     "cloze": "kedai",
+     "opts": [
+      "kedai",
+      "sungai",
+      "lantai"
+     ]
+    },
+    {
+     "bm": "Ikan berenang di dalam sungai.",
+     "en": "Fish swim in the river.",
+     "zh": "鱼在河里游泳。",
+     "cloze": "sungai",
+     "opts": [
+      "sungai",
+      "kedai",
+      "pantai"
+     ]
+    },
+    {
+     "bm": "Bunga itu sangat cantik.",
+     "en": "That flower is very beautiful.",
+     "zh": "那朵花很漂亮。"
+    },
+    {
+     "bm": "Nyamuk itu sangat kecil.",
+     "en": "That mosquito is very small.",
+     "zh": "那只蚊子很小。"
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Chen",
+       "Cikgu, bagaimana sebutan perkataan ini?"
+      ],
+      [
+       "Cikgu",
+       "Perkataan itu ialah kereta. Ke-re-ta, tiga suku kata."
+      ],
+      [
+       "Chen",
+       "Ke-re-ta. Betulkah sebutan saya?"
+      ],
+      [
+       "Cikgu",
+       "Betul. Sekarang cuba perkataan nasi pula."
+      ],
+      [
+       "Chen",
+       "Na-si. Dua suku kata."
+      ],
+      [
+       "Cikgu",
+       "Bagus sekali."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Berapa suku kata dalam perkataan kereta?",
+       "opts": [
+        "Dua",
+        "Tiga",
+        "Empat"
+       ],
+       "a": 1,
+       "why": "Ke-re-ta."
+      },
+      {
+       "q": "Berapa suku kata dalam perkataan nasi?",
+       "opts": [
+        "Satu",
+        "Dua",
+        "Tiga"
+       ],
+       "a": 1,
+       "why": "Na-si."
+      },
+      {
+       "q": "Siapakah yang mengajar sebutan?",
+       "opts": [
+        "Chen",
+        "Cikgu",
+        "Rakan Chen"
+       ],
+       "a": 1
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Wei",
+       "Saya keliru. Pulau atau pisau?"
+      ],
+      [
+       "Lin",
+       "Pulau ialah tanah di tengah laut. Pisau ialah alat untuk memotong."
+      ],
+      [
+       "Wei",
+       "Kedua-duanya ada bunyi au di hujung."
+      ],
+      [
+       "Lin",
+       "Ya. Bunyi itu dipanggil diftong."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Apakah maksud pulau?",
+       "opts": [
+        "Tanah di tengah laut",
+        "Alat untuk memotong",
+        "Tempat membeli barang"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah maksud pisau?",
+       "opts": [
+        "Tanah di tengah laut",
+        "Alat untuk memotong",
+        "Haiwan di dalam air"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Apakah nama bunyi au itu?",
+       "opts": [
+        "Diftong",
+        "Suku kata",
+        "Huruf vokal"
+       ],
+       "a": 0
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Berapa suku kata dalam perkataan kereta?",
+     "opts": [
+      "Dua",
+      "Tiga",
+      "Empat"
+     ],
+     "a": "Tiga",
+     "why": "Ke-re-ta, tiga suku kata.",
+     "title": "Suku kata"
+    },
+    {
+     "q": "Berapa suku kata dalam perkataan nasi?",
+     "opts": [
+      "Satu",
+      "Dua",
+      "Tiga"
+     ],
+     "a": "Dua",
+     "why": "Na-si, dua suku kata.",
+     "title": "Suku kata"
+    },
+    {
+     "q": "Berapa suku kata dalam perkataan kad?",
+     "opts": [
+      "Satu",
+      "Dua",
+      "Tiga"
+     ],
+     "a": "Satu",
+     "why": "Kad, satu suku kata sahaja.",
+     "title": "Suku kata"
+    },
+    {
+     "q": "Berapa suku kata dalam perkataan gotong-royong?",
+     "opts": [
+      "Tiga",
+      "Empat",
+      "Lima"
+     ],
+     "a": "Empat",
+     "why": "Go-tong-ro-yong, empat suku kata.",
+     "title": "Suku kata"
+    },
+    {
+     "q": "Perkataan manakah mengandungi bunyi au?",
+     "opts": [
+      "Pisau",
+      "Pisang",
+      "Pintu"
+     ],
+     "a": "Pisau",
+     "why": "Pi-sau. Bunyi au itu diftong.",
+     "title": "Sebutan"
+    },
+    {
+     "q": "Perkataan manakah mengandungi bunyi ai?",
+     "opts": [
+      "Kedai",
+      "Kelapa",
+      "Kuda"
+     ],
+     "a": "Kedai",
+     "why": "Ke-dai. Bunyi ai itu diftong.",
+     "title": "Sebutan"
+    },
+    {
+     "q": "Perkataan manakah bermula dengan bunyi ny?",
+     "opts": [
+      "Nyamuk",
+      "Nanas",
+      "Nasi"
+     ],
+     "a": "Nyamuk",
+     "why": "Nya-muk bermula dengan bunyi ny.",
+     "title": "Sebutan"
+    },
+    {
+     "q": "Perkataan manakah mengandungi bunyi ng?",
+     "opts": [
+      "Bunga",
+      "Buku",
+      "Bulan"
+     ],
+     "a": "Bunga",
+     "why": "Bu-nga mengandungi bunyi ng.",
+     "title": "Sebutan"
+    },
+    {
+     "q": "Berapakah jumlah huruf vokal dalam bahasa Melayu?",
+     "opts": [
+      "Tiga",
+      "Lima",
+      "Tujuh"
+     ],
+     "a": "Lima",
+     "why": "Huruf vokal ialah a, e, i, o dan u.",
+     "title": "Huruf"
+    },
+    {
+     "q": "Manakah huruf vokal?",
+     "opts": [
+      "a",
+      "b",
+      "k"
+     ],
+     "a": "a",
+     "why": "Huruf vokal ialah a, e, i, o dan u. Yang lain ialah huruf konsonan.",
+     "title": "Huruf"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Berapa suku kata dalam perkataan buku?",
+     "a": [
+      "dua",
+      "2"
+     ]
+    },
+    {
+     "q": "Perkataan pulau mengandungi diftong apa?",
+     "a": [
+      "au"
+     ]
+    },
+    {
+     "q": "Perkataan kedai mengandungi diftong apa?",
+     "a": [
+      "ai"
+     ]
+    },
+    {
+     "q": "Haiwan kecil yang menghisap darah manusia pada waktu malam?",
+     "a": [
+      "nyamuk"
+     ]
+    },
+    {
+     "q": "Tempat kita membeli barang?",
+     "a": [
+      "kedai"
+     ]
+    },
+    {
+     "q": "Benda yang kita baca?",
+     "a": [
+      "buku"
+     ]
+    },
+    {
+     "q": "Alat yang digunakan untuk memotong daging?",
+     "a": [
+      "pisau"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T2",
+   "emoji": "🙋",
+   "minggu": 3,
+   "title": "Kata Ganti Nama Diri dan Kata Tanya",
+   "ringkas": "Saya, kami, kita, beliau dan lima W satu H.",
+   "words": [
+    {
+     "bm": "saya",
+     "en": "I, me",
+     "zh": "我",
+     "py": "wǒ",
+     "g": "ganti1"
+    },
+    {
+     "bm": "aku",
+     "en": "I, me (informal)",
+     "zh": "我（非正式）",
+     "py": "wǒ",
+     "g": "ganti1"
+    },
+    {
+     "bm": "kami",
+     "en": "we (not including you)",
+     "zh": "我们（不包括你）",
+     "py": "wǒmen",
+     "g": "ganti1"
+    },
+    {
+     "bm": "kita",
+     "en": "we (including you)",
+     "zh": "咱们（包括你）",
+     "py": "zánmen",
+     "g": "ganti1"
+    },
+    {
+     "bm": "awak",
+     "en": "you",
+     "zh": "你",
+     "py": "nǐ",
+     "g": "ganti2"
+    },
+    {
+     "bm": "kamu",
+     "en": "you",
+     "zh": "你，你们",
+     "py": "nǐ",
+     "g": "ganti2"
+    },
+    {
+     "bm": "anda",
+     "en": "you (formal)",
+     "zh": "您",
+     "py": "nín",
+     "g": "ganti2"
+    },
+    {
+     "bm": "dia",
+     "en": "he, she",
+     "zh": "他，她",
+     "py": "tā",
+     "g": "ganti3"
+    },
+    {
+     "bm": "beliau",
+     "en": "he, she (respectful)",
+     "zh": "他／她（尊称）",
+     "py": "tā",
+     "g": "ganti3"
+    },
+    {
+     "bm": "mereka",
+     "en": "they",
+     "zh": "他们",
+     "py": "tāmen",
+     "g": "ganti3"
+    },
+    {
+     "bm": "apa",
+     "en": "what",
+     "zh": "什么",
+     "py": "shénme",
+     "g": "tanya"
+    },
+    {
+     "bm": "siapa",
+     "en": "who",
+     "zh": "谁",
+     "py": "shéi",
+     "g": "tanya"
+    },
+    {
+     "bm": "mana",
+     "en": "where",
+     "zh": "哪里",
+     "py": "nǎlǐ",
+     "g": "tanya"
+    },
+    {
+     "bm": "bila",
+     "en": "when",
+     "zh": "什么时候",
+     "py": "shénme shíhòu",
+     "g": "tanya"
+    },
+    {
+     "bm": "mengapa",
+     "en": "why",
+     "zh": "为什么",
+     "py": "wèishénme",
+     "g": "tanya",
+     "alt": [
+      "kenapa"
+     ]
+    },
+    {
+     "bm": "bagaimana",
+     "en": "how",
+     "zh": "怎么",
+     "py": "zěnme",
+     "g": "tanya"
+    },
+    {
+     "bm": "berapa",
+     "en": "how much, how many",
+     "zh": "多少",
+     "py": "duōshǎo",
+     "g": "tanya"
+    },
+    {
+     "bm": "pelajar",
+     "en": "student",
+     "zh": "学生",
+     "py": "xuéshēng",
+     "g": "orang",
+     "e": "🧑‍🎓"
+    },
+    {
+     "bm": "pensyarah",
+     "en": "lecturer",
+     "zh": "讲师",
+     "py": "jiǎngshī",
+     "g": "orang",
+     "e": "🧑‍🏫"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Saya seorang pelajar.",
+     "en": "I am a student.",
+     "zh": "我是学生。"
+    },
+    {
+     "bm": "Dia pensyarah kami.",
+     "en": "He is our lecturer.",
+     "zh": "他是我们的讲师。"
+    },
+    {
+     "bm": "Siapakah nama awak?",
+     "en": "What is your name?",
+     "zh": "你叫什么名字？",
+     "cloze": "Siapakah",
+     "opts": [
+      "Siapakah",
+      "Apakah",
+      "Bilakah"
+     ]
+    },
+    {
+     "bm": "Berapakah harga buku ini?",
+     "en": "How much is this book?",
+     "zh": "这本书多少钱？",
+     "cloze": "Berapakah",
+     "opts": [
+      "Berapakah",
+      "Siapakah",
+      "Bilakah"
+     ]
+    },
+    {
+     "bm": "Mengapakah awak tidak datang ke kelas?",
+     "en": "Why did you not come to class?",
+     "zh": "你为什么没来上课？",
+     "cloze": "Mengapakah",
+     "opts": [
+      "Mengapakah",
+      "Siapakah",
+      "Berapakah"
+     ]
+    },
+    {
+     "bm": "Beliau seorang Naib Canselor.",
+     "en": "He is a Vice Chancellor.",
+     "zh": "他是一位副校长。"
+    },
+    {
+     "bm": "Mereka tinggal di asrama.",
+     "en": "They live in the hostel.",
+     "zh": "他们住在宿舍。"
+    },
+    {
+     "bm": "Bilakah awak akan pulang?",
+     "en": "When will you go home?",
+     "zh": "你什么时候回家？"
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Ali",
+       "Siapakah nama awak?"
+      ],
+      [
+       "Mei",
+       "Nama saya Mei. Saya pelajar baharu di sini."
+      ],
+      [
+       "Ali",
+       "Awak datang dari mana?"
+      ],
+      [
+       "Mei",
+       "Saya datang dari China. Awak pula?"
+      ],
+      [
+       "Ali",
+       "Saya dari Kedah. Bilakah awak mendaftar?"
+      ],
+      [
+       "Mei",
+       "Saya mendaftar minggu lepas."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Siapakah pelajar baharu itu?",
+       "opts": [
+        "Ali",
+        "Mei",
+        "Pensyarah"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Dari manakah Mei datang?",
+       "opts": [
+        "China",
+        "Kedah",
+        "Bangladesh"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Bilakah Mei mendaftar?",
+       "opts": [
+        "Hari ini",
+        "Minggu lepas",
+        "Tahun depan"
+       ],
+       "a": 1
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Rahim",
+       "Esok kami pergi ke Kangar. Awak tinggal di sini, ya?"
+      ],
+      [
+       "Wei",
+       "Mengapa saya tidak boleh ikut?"
+      ],
+      [
+       "Rahim",
+       "Boleh! Jom kita pergi bersama-sama."
+      ],
+      [
+       "Wei",
+       "Bagus. Bagaimana kita ke sana?"
+      ],
+      [
+       "Rahim",
+       "Kita naik bas."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Mengapakah Rahim mula-mula berkata kami, bukan kita?",
+       "opts": [
+        "Wei tidak termasuk dalam rancangan itu",
+        "Rahim pergi seorang diri",
+        "Wei ialah pensyarah"
+       ],
+       "a": 0,
+       "why": "Kami tidak termasuk orang yang kita lawan bercakap."
+      },
+      {
+       "q": "Bagaimanakah mereka akan ke Kangar?",
+       "opts": [
+        "Naik bas",
+        "Naik kereta",
+        "Berjalan kaki"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Adakah Wei akhirnya ikut?",
+       "opts": [
+        "Ya",
+        "Tidak",
+        "Belum tahu"
+       ],
+       "a": 0,
+       "why": "Rahim berkata jom kita pergi bersama-sama."
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Saya dan rakan saya pergi. Awak tinggal di sini. Perkataan manakah yang betul?",
+     "opts": [
+      "Kami",
+      "Kita",
+      "Mereka"
+     ],
+     "a": "Kami",
+     "why": "Kami tidak termasuk orang yang kita lawan bercakap.",
+     "title": "Tatabahasa"
+    },
+    {
+     "q": "Saya dan awak pergi bersama-sama. Perkataan manakah yang betul?",
+     "opts": [
+      "Kita",
+      "Kami",
+      "Dia"
+     ],
+     "a": "Kita",
+     "why": "Kita termasuk orang yang kita lawan bercakap.",
+     "title": "Tatabahasa"
+    },
+    {
+     "q": "Kata ganti nama yang hormat untuk seorang profesor?",
+     "opts": [
+      "Beliau",
+      "Dia",
+      "Kamu"
+     ],
+     "a": "Beliau",
+     "why": "Beliau digunakan untuk orang yang kita hormati.",
+     "title": "Tatabahasa"
+    },
+    {
+     "q": "Kata tanya untuk bertanya tentang masa?",
+     "opts": [
+      "Bila",
+      "Mana",
+      "Siapa"
+     ],
+     "a": "Bila",
+     "why": "Contoh: Bilakah kelas bermula?",
+     "title": "Kata tanya"
+    },
+    {
+     "q": "Kata tanya untuk bertanya tentang tempat?",
+     "opts": [
+      "Mana",
+      "Apa",
+      "Berapa"
+     ],
+     "a": "Mana",
+     "why": "Contoh: Di manakah kelas kita?",
+     "title": "Kata tanya"
+    },
+    {
+     "q": "Kata tanya untuk bertanya tentang orang?",
+     "opts": [
+      "Siapa",
+      "Apa",
+      "Mana"
+     ],
+     "a": "Siapa",
+     "why": "Contoh: Siapakah nama awak?",
+     "title": "Kata tanya"
+    },
+    {
+     "q": "Kata tanya untuk bertanya tentang sebab?",
+     "opts": [
+      "Mengapa",
+      "Bagaimana",
+      "Bila"
+     ],
+     "a": "Mengapa",
+     "why": "Contoh: Mengapakah awak lewat?",
+     "title": "Kata tanya"
+    },
+    {
+     "q": "Kata tanya untuk bertanya tentang harga?",
+     "opts": [
+      "Berapa",
+      "Apa",
+      "Mana"
+     ],
+     "a": "Berapa",
+     "why": "Contoh: Berapakah harga ini?",
+     "title": "Kata tanya"
+    },
+    {
+     "q": "Kata tanya untuk bertanya tentang cara?",
+     "opts": [
+      "Bagaimana",
+      "Siapa",
+      "Bila"
+     ],
+     "a": "Bagaimana",
+     "why": "Contoh: Bagaimanakah awak datang ke kelas?",
+     "title": "Kata tanya"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Apakah kata tanya untuk bertanya nama seseorang?",
+     "a": [
+      "siapa",
+      "siapakah"
+     ]
+    },
+    {
+     "q": "Saya dan awak pergi bersama-sama. Apakah kata ganti nama yang betul?",
+     "a": [
+      "kita"
+     ]
+    },
+    {
+     "q": "Saya dan rakan saya pergi, tetapi awak tinggal di sini. Apakah kata ganti nama yang betul?",
+     "a": [
+      "kami"
+     ]
+    },
+    {
+     "q": "Apakah kata ganti nama yang hormat bagi orang ketiga?",
+     "a": [
+      "beliau"
+     ]
+    },
+    {
+     "q": "Apakah kata tanya untuk bertanya harga barang?",
+     "a": [
+      "berapa",
+      "berapakah"
+     ]
+    },
+    {
+     "q": "Apakah kata tanya untuk bertanya tempat?",
+     "a": [
+      "mana",
+      "di mana",
+      "manakah"
+     ]
+    },
+    {
+     "q": "Apakah kata tanya untuk bertanya sebab?",
+     "a": [
+      "mengapa",
+      "kenapa",
+      "mengapakah"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T3",
+   "emoji": "📏",
+   "minggu": 4,
+   "title": "Kata Adjektif dan Kata Sendi Nama",
+   "ringkas": "Sifat, perasaan, dan penggunaan di, ke, dari, daripada.",
+   "words": [
+    {
+     "bm": "besar",
+     "en": "big",
+     "zh": "大",
+     "py": "dà",
+     "g": "ukuran"
+    },
+    {
+     "bm": "kecil",
+     "en": "small",
+     "zh": "小",
+     "py": "xiǎo",
+     "g": "ukuran"
+    },
+    {
+     "bm": "tinggi",
+     "en": "tall, high",
+     "zh": "高",
+     "py": "gāo",
+     "g": "ukuran"
+    },
+    {
+     "bm": "rendah",
+     "en": "low, short (height)",
+     "zh": "低",
+     "py": "dī",
+     "g": "ukuran"
+    },
+    {
+     "bm": "panjang",
+     "en": "long",
+     "zh": "长",
+     "py": "cháng",
+     "g": "ukuran"
+    },
+    {
+     "bm": "pendek",
+     "en": "short (length)",
+     "zh": "短",
+     "py": "duǎn",
+     "g": "ukuran"
+    },
+    {
+     "bm": "berat",
+     "en": "heavy",
+     "zh": "重",
+     "py": "zhòng",
+     "g": "ukuran"
+    },
+    {
+     "bm": "ringan",
+     "en": "light (weight)",
+     "zh": "轻",
+     "py": "qīng",
+     "g": "ukuran"
+    },
+    {
+     "bm": "gembira",
+     "en": "happy",
+     "zh": "开心",
+     "py": "kāixīn",
+     "g": "perasaan",
+     "e": "😀"
+    },
+    {
+     "bm": "sedih",
+     "en": "sad",
+     "zh": "伤心",
+     "py": "shāngxīn",
+     "g": "perasaan",
+     "e": "😢"
+    },
+    {
+     "bm": "marah",
+     "en": "angry",
+     "zh": "生气",
+     "py": "shēngqì",
+     "g": "perasaan",
+     "e": "😠"
+    },
+    {
+     "bm": "takut",
+     "en": "afraid",
+     "zh": "害怕",
+     "py": "hàipà",
+     "g": "perasaan",
+     "e": "😨"
+    },
+    {
+     "bm": "cantik",
+     "en": "beautiful",
+     "zh": "漂亮",
+     "py": "piàoliang",
+     "g": "sifat"
+    },
+    {
+     "bm": "buruk",
+     "en": "ugly, bad",
+     "zh": "丑，坏",
+     "py": "chǒu",
+     "g": "sifat"
+    },
+    {
+     "bm": "cepat",
+     "en": "fast",
+     "zh": "快",
+     "py": "kuài",
+     "g": "sifat"
+    },
+    {
+     "bm": "lambat",
+     "en": "slow, late",
+     "zh": "慢",
+     "py": "màn",
+     "g": "sifat"
+    },
+    {
+     "bm": "di",
+     "en": "at, in (place)",
+     "zh": "在（地点）",
+     "py": "zài",
+     "g": "sendi"
+    },
+    {
+     "bm": "ke",
+     "en": "to (direction)",
+     "zh": "去，到",
+     "py": "dào",
+     "g": "sendi"
+    },
+    {
+     "bm": "dari",
+     "en": "from (place or time)",
+     "zh": "从（地点或时间）",
+     "py": "cóng",
+     "g": "sendi"
+    },
+    {
+     "bm": "daripada",
+     "en": "from (person or material)",
+     "zh": "来自（人或材料）",
+     "py": "láizì",
+     "g": "sendi"
+    },
+    {
+     "bm": "kepada",
+     "en": "to (a person)",
+     "zh": "给（人）",
+     "py": "gěi",
+     "g": "sendi"
+    },
+    {
+     "bm": "dengan",
+     "en": "with (tool or together)",
+     "zh": "用，和",
+     "py": "yòng",
+     "g": "sendi"
+    },
+    {
+     "bm": "pada",
+     "en": "at, on (time)",
+     "zh": "在（时间）",
+     "py": "zài",
+     "g": "sendi"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Dia duduk di atas kerusi.",
+     "en": "He sits on the chair.",
+     "zh": "他坐在椅子上。",
+     "cloze": "di",
+     "opts": [
+      "di",
+      "ke",
+      "dari"
+     ]
+    },
+    {
+     "bm": "Saya pergi ke pejabat.",
+     "en": "I go to the office.",
+     "zh": "我去办公室。",
+     "cloze": "ke",
+     "opts": [
+      "ke",
+      "di",
+      "pada"
+     ]
+    },
+    {
+     "bm": "Meja itu diperbuat daripada kayu.",
+     "en": "That table is made of wood.",
+     "zh": "那张桌子是用木头做的。",
+     "cloze": "daripada",
+     "opts": [
+      "daripada",
+      "dari",
+      "di"
+     ]
+    },
+    {
+     "bm": "Surat ini daripada abang saya.",
+     "en": "This letter is from my elder brother.",
+     "zh": "这封信来自我哥哥。",
+     "cloze": "daripada",
+     "opts": [
+      "daripada",
+      "dari",
+      "kepada"
+     ]
+    },
+    {
+     "bm": "Berikan buku ini kepada pensyarah.",
+     "en": "Give this book to the lecturer.",
+     "zh": "把这本书交给讲师。",
+     "cloze": "kepada",
+     "opts": [
+      "kepada",
+      "ke",
+      "pada"
+     ]
+    },
+    {
+     "bm": "Dia menulis dengan pen.",
+     "en": "He writes with a pen.",
+     "zh": "他用笔写字。",
+     "cloze": "dengan",
+     "opts": [
+      "dengan",
+      "di",
+      "ke"
+     ]
+    },
+    {
+     "bm": "Saya datang dari Pulau Pinang.",
+     "en": "I come from Penang.",
+     "zh": "我来自槟城。",
+     "cloze": "dari",
+     "opts": [
+      "dari",
+      "daripada",
+      "di"
+     ]
+    },
+    {
+     "bm": "Kelas bermula pada pukul lapan.",
+     "en": "Class starts at eight o'clock.",
+     "zh": "课在八点开始。",
+     "cloze": "pada",
+     "opts": [
+      "pada",
+      "di",
+      "ke"
+     ]
+    },
+    {
+     "bm": "Beg itu sangat berat.",
+     "en": "That bag is very heavy.",
+     "zh": "那个包很重。"
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Cikgu",
+       "Mei, ayat ini salah. Meja itu diperbuat dari kayu."
+      ],
+      [
+       "Mei",
+       "Apakah yang salah, cikgu?"
+      ],
+      [
+       "Cikgu",
+       "Gunakan daripada untuk bahan. Meja itu diperbuat daripada kayu."
+      ],
+      [
+       "Mei",
+       "Jadi bila saya guna dari?"
+      ],
+      [
+       "Cikgu",
+       "Guna dari untuk tempat dan masa. Contohnya, saya datang dari Kedah."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Kata sendi nama yang betul untuk bahan?",
+       "opts": [
+        "Daripada",
+        "Dari",
+        "Kepada"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Kata sendi nama yang betul untuk tempat?",
+       "opts": [
+        "Dari",
+        "Daripada",
+        "Dengan"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Siapakah yang membetulkan ayat itu?",
+       "opts": [
+        "Mei",
+        "Cikgu",
+        "Rakan Mei"
+       ],
+       "a": 1
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Wei",
+       "Beg saya terlalu berat."
+      ],
+      [
+       "Lin",
+       "Mengapa berat sangat?"
+      ],
+      [
+       "Wei",
+       "Ada lima buah buku yang besar di dalamnya."
+      ],
+      [
+       "Lin",
+       "Tinggalkan dua buah di asrama. Nanti beg awak menjadi ringan."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Mengapakah beg Wei berat?",
+       "opts": [
+        "Ada lima buah buku besar",
+        "Ada komputer",
+        "Beg itu rosak"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah cadangan Lin?",
+       "opts": [
+        "Tinggalkan dua buah buku",
+        "Beli beg baharu",
+        "Minta bantuan"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah lawan bagi perkataan berat?",
+       "opts": [
+        "Ringan",
+        "Besar",
+        "Panjang"
+       ],
+       "a": 0
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Saya belajar _____ universiti.",
+     "opts": [
+      "di",
+      "ke",
+      "dari"
+     ],
+     "a": "di",
+     "why": "Di digunakan untuk tempat.",
+     "title": "Kata sendi"
+    },
+    {
+     "q": "Kerusi itu diperbuat _____ besi.",
+     "opts": [
+      "daripada",
+      "dari",
+      "di"
+     ],
+     "a": "daripada",
+     "why": "Daripada digunakan untuk bahan.",
+     "title": "Kata sendi"
+    },
+    {
+     "q": "Beliau datang _____ Kedah.",
+     "opts": [
+      "dari",
+      "daripada",
+      "kepada"
+     ],
+     "a": "dari",
+     "why": "Dari digunakan untuk tempat dan masa.",
+     "title": "Kata sendi"
+    },
+    {
+     "q": "Saya memberi hadiah _____ adik saya.",
+     "opts": [
+      "kepada",
+      "ke",
+      "pada"
+     ],
+     "a": "kepada",
+     "why": "Kepada digunakan untuk manusia.",
+     "title": "Kata sendi"
+    },
+    {
+     "q": "Kata adjektif manakah menunjukkan perasaan?",
+     "opts": [
+      "Gembira",
+      "Tinggi",
+      "Panjang"
+     ],
+     "a": "Gembira",
+     "why": "Gembira, sedih, marah dan takut ialah kata adjektif perasaan.",
+     "title": "Adjektif"
+    },
+    {
+     "q": "Kata adjektif manakah menunjukkan ukuran?",
+     "opts": [
+      "Besar",
+      "Marah",
+      "Cantik"
+     ],
+     "a": "Besar",
+     "why": "Besar, kecil, tinggi dan rendah ialah kata adjektif ukuran.",
+     "title": "Adjektif"
+    },
+    {
+     "q": "Apakah lawan bagi perkataan tinggi?",
+     "opts": [
+      "Rendah",
+      "Panjang",
+      "Besar"
+     ],
+     "a": "Rendah",
+     "title": "Adjektif"
+    },
+    {
+     "q": "Apakah lawan bagi perkataan cepat?",
+     "opts": [
+      "Lambat",
+      "Ringan",
+      "Kecil"
+     ],
+     "a": "Lambat",
+     "title": "Adjektif"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Apakah lawan bagi perkataan besar?",
+     "a": [
+      "kecil"
+     ]
+    },
+    {
+     "q": "Apakah lawan bagi perkataan panjang?",
+     "a": [
+      "pendek"
+     ]
+    },
+    {
+     "q": "Apakah lawan bagi perkataan gembira?",
+     "a": [
+      "sedih"
+     ]
+    },
+    {
+     "q": "Apakah lawan bagi perkataan berat?",
+     "a": [
+      "ringan"
+     ]
+    },
+    {
+     "q": "Kata sendi nama untuk tempat: Saya tinggal _____ Cyberjaya.",
+     "a": [
+      "di"
+     ]
+    },
+    {
+     "q": "Kata sendi nama untuk arah tujuan: Saya pergi _____ kelas.",
+     "a": [
+      "ke"
+     ]
+    },
+    {
+     "q": "Apakah perasaan kita apabila lulus peperiksaan?",
+     "a": [
+      "gembira"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T4",
+   "emoji": "🔢",
+   "minggu": 5,
+   "title": "Sistem Nombor dan Waktu",
+   "ringkas": "Nombor, hari, waktu dan wang ringgit.",
+   "words": [
+    {
+     "bm": "sifar",
+     "en": "zero",
+     "zh": "零",
+     "py": "líng",
+     "g": "nombor",
+     "alt": [
+      "kosong"
+     ]
+    },
+    {
+     "bm": "satu",
+     "en": "one",
+     "zh": "一",
+     "py": "yī",
+     "g": "nombor"
+    },
+    {
+     "bm": "dua",
+     "en": "two",
+     "zh": "二",
+     "py": "èr",
+     "g": "nombor"
+    },
+    {
+     "bm": "tiga",
+     "en": "three",
+     "zh": "三",
+     "py": "sān",
+     "g": "nombor"
+    },
+    {
+     "bm": "empat",
+     "en": "four",
+     "zh": "四",
+     "py": "sì",
+     "g": "nombor"
+    },
+    {
+     "bm": "lima",
+     "en": "five",
+     "zh": "五",
+     "py": "wǔ",
+     "g": "nombor"
+    },
+    {
+     "bm": "enam",
+     "en": "six",
+     "zh": "六",
+     "py": "liù",
+     "g": "nombor"
+    },
+    {
+     "bm": "tujuh",
+     "en": "seven",
+     "zh": "七",
+     "py": "qī",
+     "g": "nombor"
+    },
+    {
+     "bm": "lapan",
+     "en": "eight",
+     "zh": "八",
+     "py": "bā",
+     "g": "nombor"
+    },
+    {
+     "bm": "sembilan",
+     "en": "nine",
+     "zh": "九",
+     "py": "jiǔ",
+     "g": "nombor"
+    },
+    {
+     "bm": "sepuluh",
+     "en": "ten",
+     "zh": "十",
+     "py": "shí",
+     "g": "nombor"
+    },
+    {
+     "bm": "sebelas",
+     "en": "eleven",
+     "zh": "十一",
+     "py": "shíyī",
+     "g": "nombor"
+    },
+    {
+     "bm": "dua belas",
+     "en": "twelve",
+     "zh": "十二",
+     "py": "shí'èr",
+     "g": "nombor"
+    },
+    {
+     "bm": "lima belas",
+     "en": "fifteen",
+     "zh": "十五",
+     "py": "shíwǔ",
+     "g": "nombor"
+    },
+    {
+     "bm": "dua puluh",
+     "en": "twenty",
+     "zh": "二十",
+     "py": "èrshí",
+     "g": "nombor"
+    },
+    {
+     "bm": "lima puluh",
+     "en": "fifty",
+     "zh": "五十",
+     "py": "wǔshí",
+     "g": "nombor"
+    },
+    {
+     "bm": "seratus",
+     "en": "one hundred",
+     "zh": "一百",
+     "py": "yībǎi",
+     "g": "nombor"
+    },
+    {
+     "bm": "Isnin",
+     "en": "Monday",
+     "zh": "星期一",
+     "py": "xīngqīyī",
+     "g": "hari"
+    },
+    {
+     "bm": "Selasa",
+     "en": "Tuesday",
+     "zh": "星期二",
+     "py": "xīngqī'èr",
+     "g": "hari"
+    },
+    {
+     "bm": "Rabu",
+     "en": "Wednesday",
+     "zh": "星期三",
+     "py": "xīngqīsān",
+     "g": "hari"
+    },
+    {
+     "bm": "Khamis",
+     "en": "Thursday",
+     "zh": "星期四",
+     "py": "xīngqīsì",
+     "g": "hari"
+    },
+    {
+     "bm": "Jumaat",
+     "en": "Friday",
+     "zh": "星期五",
+     "py": "xīngqīwǔ",
+     "g": "hari"
+    },
+    {
+     "bm": "Sabtu",
+     "en": "Saturday",
+     "zh": "星期六",
+     "py": "xīngqīliù",
+     "g": "hari"
+    },
+    {
+     "bm": "Ahad",
+     "en": "Sunday",
+     "zh": "星期日",
+     "py": "xīngqīrì",
+     "g": "hari"
+    },
+    {
+     "bm": "pagi",
+     "en": "morning",
+     "zh": "早上",
+     "py": "zǎoshang",
+     "g": "waktu"
+    },
+    {
+     "bm": "tengah hari",
+     "en": "noon, midday",
+     "zh": "中午",
+     "py": "zhōngwǔ",
+     "g": "waktu"
+    },
+    {
+     "bm": "petang",
+     "en": "afternoon, evening",
+     "zh": "下午",
+     "py": "xiàwǔ",
+     "g": "waktu"
+    },
+    {
+     "bm": "malam",
+     "en": "night",
+     "zh": "晚上",
+     "py": "wǎnshàng",
+     "g": "waktu"
+    },
+    {
+     "bm": "hari ini",
+     "en": "today",
+     "zh": "今天",
+     "py": "jīntiān",
+     "g": "waktu"
+    },
+    {
+     "bm": "esok",
+     "en": "tomorrow",
+     "zh": "明天",
+     "py": "míngtiān",
+     "g": "waktu"
+    },
+    {
+     "bm": "semalam",
+     "en": "yesterday, last night",
+     "zh": "昨天，昨晚",
+     "py": "zuótiān",
+     "g": "waktu"
+    },
+    {
+     "bm": "tahun depan",
+     "en": "next year",
+     "zh": "明年",
+     "py": "míngnián",
+     "g": "waktu"
+    },
+    {
+     "bm": "pukul",
+     "en": "o'clock",
+     "zh": "点钟",
+     "py": "diǎnzhōng",
+     "g": "jam",
+     "e": "⏰"
+    },
+    {
+     "bm": "jam",
+     "en": "hour",
+     "zh": "小时",
+     "py": "xiǎoshí",
+     "g": "jam",
+     "e": "🕒"
+    },
+    {
+     "bm": "minit",
+     "en": "minute",
+     "zh": "分钟",
+     "py": "fēnzhōng",
+     "g": "jam",
+     "e": "⏱️"
+    },
+    {
+     "bm": "ringgit",
+     "en": "ringgit (Malaysian dollar)",
+     "zh": "令吉",
+     "py": "lìngjí",
+     "g": "wang",
+     "e": "💵"
+    },
+    {
+     "bm": "sen",
+     "en": "sen (cent)",
+     "zh": "仙",
+     "py": "xiān",
+     "g": "wang"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Hari ini hari Isnin.",
+     "en": "Today is Monday.",
+     "zh": "今天是星期一。"
+    },
+    {
+     "bm": "Pukul berapa sekarang?",
+     "en": "What time is it now?",
+     "zh": "现在几点？",
+     "cloze": "berapa",
+     "opts": [
+      "berapa",
+      "siapa",
+      "mana"
+     ]
+    },
+    {
+     "bm": "Kelas bermula pukul lapan pagi.",
+     "en": "The class starts at eight in the morning.",
+     "zh": "课在早上八点开始。"
+    },
+    {
+     "bm": "Esok hari Selasa.",
+     "en": "Tomorrow is Tuesday.",
+     "zh": "明天是星期二。"
+    },
+    {
+     "bm": "Selepas hari Isnin ialah hari Selasa.",
+     "en": "After Monday comes Tuesday.",
+     "zh": "星期一之后是星期二。",
+     "cloze": "Selasa",
+     "opts": [
+      "Selasa",
+      "Rabu",
+      "Sabtu"
+     ]
+    },
+    {
+     "bm": "Dua tambah tiga ialah lima.",
+     "en": "Two plus three is five.",
+     "zh": "二加三等于五。",
+     "cloze": "lima",
+     "opts": [
+      "lima",
+      "enam",
+      "empat"
+     ]
+    },
+    {
+     "bm": "Satu ringgit ada seratus sen.",
+     "en": "One ringgit has one hundred sen.",
+     "zh": "一令吉有一百仙。",
+     "cloze": "sen",
+     "opts": [
+      "sen",
+      "minit",
+      "jam"
+     ]
+    },
+    {
+     "bm": "Satu hari ada dua puluh empat jam.",
+     "en": "One day has twenty-four hours.",
+     "zh": "一天有二十四小时。",
+     "cloze": "jam",
+     "opts": [
+      "jam",
+      "minit",
+      "sen"
+     ]
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Li Wei",
+       "Hari ini hari apa?"
+      ],
+      [
+       "Rahim",
+       "Hari ini hari Rabu."
+      ],
+      [
+       "Li Wei",
+       "Pukul berapa kelas kita bermula?"
+      ],
+      [
+       "Rahim",
+       "Kelas kita bermula pukul sembilan pagi."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Hari ini hari apa?",
+       "opts": [
+        "Isnin",
+        "Rabu",
+        "Jumaat"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Kelas bermula pukul berapa?",
+       "opts": [
+        "Pukul lapan pagi",
+        "Pukul sembilan pagi",
+        "Pukul sembilan malam"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Kelas bermula pada waktu apa?",
+       "opts": [
+        "Pagi",
+        "Petang",
+        "Malam"
+       ],
+       "a": 0,
+       "why": "Pukul sembilan pagi, jadi waktu pagi."
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Rahim",
+       "Esok hari apa?"
+      ],
+      [
+       "Li Wei",
+       "Esok hari Khamis. Kita ada ujian lisan."
+      ],
+      [
+       "Rahim",
+       "Ujian itu pukul berapa?"
+      ],
+      [
+       "Li Wei",
+       "Pukul dua petang."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Esok hari apa?",
+       "opts": [
+        "Rabu",
+        "Khamis",
+        "Sabtu"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Apakah yang mereka ada esok?",
+       "opts": [
+        "Kelas baharu",
+        "Ujian lisan",
+        "Cuti"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Ujian itu pada waktu apa?",
+       "opts": [
+        "Pagi",
+        "Petang",
+        "Malam"
+       ],
+       "a": 1,
+       "why": "Pukul dua petang."
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Selepas hari Rabu ialah hari apa?",
+     "opts": [
+      "Khamis",
+      "Selasa",
+      "Sabtu"
+     ],
+     "a": "Khamis",
+     "title": "Hari"
+    },
+    {
+     "q": "Hari apakah selepas hari Sabtu?",
+     "opts": [
+      "Ahad",
+      "Jumaat",
+      "Isnin"
+     ],
+     "a": "Ahad",
+     "title": "Hari"
+    },
+    {
+     "q": "Pukul satu tengah hari ditulis sebagai pukul berapa?",
+     "opts": [
+      "Pukul satu petang",
+      "Pukul satu pagi",
+      "Pukul satu malam"
+     ],
+     "a": "Pukul satu petang",
+     "why": "Selepas tengah hari kita gunakan petang.",
+     "title": "Waktu"
+    },
+    {
+     "q": "Dua belas tambah tiga ialah berapa?",
+     "opts": [
+      "Lima belas",
+      "Lima puluh",
+      "Tiga belas"
+     ],
+     "a": "Lima belas",
+     "title": "Nombor"
+    },
+    {
+     "q": "Nombor 20 dibaca sebagai apa?",
+     "opts": [
+      "Dua puluh",
+      "Dua belas",
+      "Dua ratus"
+     ],
+     "a": "Dua puluh",
+     "why": "Dua belas ialah 12, dua puluh ialah 20.",
+     "title": "Nombor"
+    },
+    {
+     "q": "Nombor 12 dibaca sebagai apa?",
+     "opts": [
+      "Dua belas",
+      "Dua puluh",
+      "Dua ratus"
+     ],
+     "a": "Dua belas",
+     "title": "Nombor"
+    },
+    {
+     "q": "RM2.50 dibaca sebagai apa?",
+     "opts": [
+      "Dua ringgit lima puluh sen",
+      "Dua sen lima puluh ringgit",
+      "Dua puluh lima ringgit"
+     ],
+     "a": "Dua ringgit lima puluh sen",
+     "title": "Wang"
+    },
+    {
+     "q": "Waktu antara pukul 12 tengah hari dan pukul 7 malam dipanggil apa?",
+     "opts": [
+      "Petang",
+      "Pagi",
+      "Malam"
+     ],
+     "a": "Petang",
+     "title": "Waktu"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Hari ini hari Isnin. Esok hari apa?",
+     "a": [
+      "Selasa"
+     ]
+    },
+    {
+     "q": "Selepas hari Jumaat ialah hari apa?",
+     "a": [
+      "Sabtu"
+     ]
+    },
+    {
+     "q": "Satu ringgit ada berapa sen?",
+     "a": [
+      "seratus",
+      "100"
+     ]
+    },
+    {
+     "q": "Lima tambah tiga ialah berapa?",
+     "a": [
+      "lapan",
+      "8"
+     ]
+    },
+    {
+     "q": "Sepuluh tolak empat ialah berapa?",
+     "a": [
+      "enam",
+      "6"
+     ]
+    },
+    {
+     "q": "Pukul lapan pagi. Dua jam kemudian pukul berapa?",
+     "a": [
+      "sepuluh",
+      "10"
+     ]
+    },
+    {
+     "q": "Satu jam ada berapa minit?",
+     "a": [
+      "enam puluh",
+      "60"
+     ]
+    },
+    {
+     "q": "Kita makan sarapan pada waktu apa?",
+     "a": [
+      "pagi"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T5",
+   "emoji": "👋",
+   "minggu": 6,
+   "title": "Ucapan dan Pengenalan Diri",
+   "ringkas": "Sapaan harian, memperkenalkan diri, hobi dan cita-cita.",
+   "words": [
+    {
+     "bm": "apa khabar",
+     "en": "how are you",
+     "zh": "你好吗",
+     "py": "nǐ hǎo ma",
+     "g": "sapaan"
+    },
+    {
+     "bm": "khabar baik",
+     "en": "I am fine",
+     "zh": "我很好",
+     "py": "wǒ hěn hǎo",
+     "g": "sapaan"
+    },
+    {
+     "bm": "selamat pagi",
+     "en": "good morning",
+     "zh": "早安",
+     "py": "zǎo'ān",
+     "g": "sapaan",
+     "e": "🌅"
+    },
+    {
+     "bm": "selamat petang",
+     "en": "good afternoon, good evening",
+     "zh": "午安，晚安",
+     "py": "wǔ'ān",
+     "g": "sapaan",
+     "e": "🌇"
+    },
+    {
+     "bm": "selamat malam",
+     "en": "good night",
+     "zh": "晚安",
+     "py": "wǎn'ān",
+     "g": "sapaan",
+     "e": "🌙"
+    },
+    {
+     "bm": "terima kasih",
+     "en": "thank you",
+     "zh": "谢谢",
+     "py": "xièxiè",
+     "g": "sapaan"
+    },
+    {
+     "bm": "sama-sama",
+     "en": "you are welcome",
+     "zh": "不客气",
+     "py": "bù kèqì",
+     "g": "sapaan"
+    },
+    {
+     "bm": "jumpa lagi",
+     "en": "see you again",
+     "zh": "再见",
+     "py": "zàijiàn",
+     "g": "sapaan"
+    },
+    {
+     "bm": "selamat tinggal",
+     "en": "goodbye",
+     "zh": "再见",
+     "py": "zàijiàn",
+     "g": "sapaan"
+    },
+    {
+     "bm": "maaf",
+     "en": "sorry, excuse me",
+     "zh": "对不起",
+     "py": "duìbùqǐ",
+     "g": "sapaan"
+    },
+    {
+     "bm": "sila",
+     "en": "please",
+     "zh": "请",
+     "py": "qǐng",
+     "g": "sapaan"
+    },
+    {
+     "bm": "nama",
+     "en": "name",
+     "zh": "名字",
+     "py": "míngzì",
+     "g": "diri"
+    },
+    {
+     "bm": "umur",
+     "en": "age",
+     "zh": "年龄",
+     "py": "niánlíng",
+     "g": "diri"
+    },
+    {
+     "bm": "negara",
+     "en": "country",
+     "zh": "国家",
+     "py": "guójiā",
+     "g": "diri",
+     "e": "🌏"
+    },
+    {
+     "bm": "hobi",
+     "en": "hobby",
+     "zh": "爱好",
+     "py": "àihào",
+     "g": "diri"
+    },
+    {
+     "bm": "cita-cita",
+     "en": "ambition",
+     "zh": "志愿",
+     "py": "zhìyuàn",
+     "g": "diri"
+    },
+    {
+     "bm": "membaca",
+     "en": "reading",
+     "zh": "阅读",
+     "py": "yuèdú",
+     "g": "hobi",
+     "e": "📚"
+    },
+    {
+     "bm": "bermain bola",
+     "en": "playing football",
+     "zh": "踢足球",
+     "py": "tī zúqiú",
+     "g": "hobi",
+     "e": "⚽"
+    },
+    {
+     "bm": "doktor",
+     "en": "doctor",
+     "zh": "医生",
+     "py": "yīshēng",
+     "g": "kerja",
+     "e": "🩺"
+    },
+    {
+     "bm": "guru",
+     "en": "teacher",
+     "zh": "老师",
+     "py": "lǎoshī",
+     "g": "kerja",
+     "e": "🧑‍🏫"
+    },
+    {
+     "bm": "jurutera",
+     "en": "engineer",
+     "zh": "工程师",
+     "py": "gōngchéngshī",
+     "g": "kerja",
+     "e": "⚙️"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Nama saya Ali.",
+     "en": "My name is Ali.",
+     "zh": "我叫阿里。"
+    },
+    {
+     "bm": "Saya berasal dari China.",
+     "en": "I come from China.",
+     "zh": "我来自中国。"
+    },
+    {
+     "bm": "Umur saya dua puluh tahun.",
+     "en": "I am twenty years old.",
+     "zh": "我二十岁。"
+    },
+    {
+     "bm": "Saya tinggal di Cyberjaya.",
+     "en": "I live in Cyberjaya.",
+     "zh": "我住在赛城。"
+    },
+    {
+     "bm": "Hobi saya membaca buku.",
+     "en": "My hobby is reading books.",
+     "zh": "我的爱好是看书。"
+    },
+    {
+     "bm": "Siapakah nama awak?",
+     "en": "What is your name?",
+     "zh": "你叫什么名字？",
+     "cloze": "Siapakah",
+     "opts": [
+      "Siapakah",
+      "Apakah",
+      "Berapakah"
+     ]
+    },
+    {
+     "bm": "Selamat malam, saya mahu tidur.",
+     "en": "Good night, I want to sleep.",
+     "zh": "晚安，我要睡觉了。",
+     "cloze": "malam",
+     "opts": [
+      "malam",
+      "pagi",
+      "petang"
+     ]
+    },
+    {
+     "bm": "Cita-cita saya menjadi jurutera.",
+     "en": "My ambition is to become an engineer.",
+     "zh": "我的志愿是当工程师。"
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Muiz",
+       "Selamat pagi. Apa khabar?"
+      ],
+      [
+       "Sarah",
+       "Selamat pagi. Khabar baik. Siapakah nama awak?"
+      ],
+      [
+       "Muiz",
+       "Nama saya Muiz. Awak dari negara mana?"
+      ],
+      [
+       "Sarah",
+       "Saya dari Mesir. Awak pula?"
+      ],
+      [
+       "Muiz",
+       "Saya dari Afrika Selatan. Berapakah umur awak?"
+      ],
+      [
+       "Sarah",
+       "Umur saya dua puluh tahun."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Dari negara manakah Sarah berasal?",
+       "opts": [
+        "Mesir",
+        "Afrika Selatan",
+        "China"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Berapakah umur Sarah?",
+       "opts": [
+        "Lapan belas tahun",
+        "Dua puluh tahun",
+        "Dua puluh lima tahun"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Pada waktu apakah mereka berjumpa?",
+       "opts": [
+        "Pagi",
+        "Petang",
+        "Malam"
+       ],
+       "a": 0,
+       "why": "Mereka berkata selamat pagi."
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Lin",
+       "Maaf, saya lewat."
+      ],
+      [
+       "Pensyarah",
+       "Tidak mengapa. Sila duduk."
+      ],
+      [
+       "Lin",
+       "Terima kasih, cikgu."
+      ],
+      [
+       "Pensyarah",
+       "Sama-sama. Jangan lupa hantar tugasan esok."
+      ],
+      [
+       "Lin",
+       "Baik. Jumpa lagi."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Mengapakah Lin berkata maaf?",
+       "opts": [
+        "Dia lewat",
+        "Dia lupa buku",
+        "Dia sakit"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah jawapan pensyarah kepada terima kasih?",
+       "opts": [
+        "Sama-sama",
+        "Jumpa lagi",
+        "Apa khabar"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah yang Lin perlu buat esok?",
+       "opts": [
+        "Hantar tugasan",
+        "Datang awal",
+        "Berjumpa doktor"
+       ],
+       "a": 0
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Pukul lapan pagi anda berjumpa pensyarah. Apakah ucapan yang sesuai?",
+     "opts": [
+      "Selamat pagi",
+      "Selamat malam",
+      "Selamat tinggal"
+     ],
+     "a": "Selamat pagi",
+     "title": "Ucapan"
+    },
+    {
+     "q": "Pukul sembilan malam anda berjumpa rakan. Apakah ucapan yang sesuai?",
+     "opts": [
+      "Selamat malam",
+      "Selamat pagi",
+      "Selamat tengah hari"
+     ],
+     "a": "Selamat malam",
+     "title": "Ucapan"
+    },
+    {
+     "q": "Rakan berkata terima kasih. Apakah jawapan yang sesuai?",
+     "opts": [
+      "Sama-sama",
+      "Apa khabar",
+      "Selamat tinggal"
+     ],
+     "a": "Sama-sama",
+     "title": "Ucapan"
+    },
+    {
+     "q": "Rakan bertanya apa khabar. Apakah jawapan yang sesuai?",
+     "opts": [
+      "Khabar baik",
+      "Terima kasih",
+      "Sila duduk"
+     ],
+     "a": "Khabar baik",
+     "title": "Ucapan"
+    },
+    {
+     "q": "Anda hendak pulang ke asrama. Apakah ucapan yang sesuai kepada rakan?",
+     "opts": [
+      "Jumpa lagi",
+      "Apa khabar",
+      "Sila duduk"
+     ],
+     "a": "Jumpa lagi",
+     "title": "Ucapan"
+    },
+    {
+     "q": "Anda terlambat masuk ke kelas. Apakah yang patut anda katakan?",
+     "opts": [
+      "Maaf",
+      "Terima kasih",
+      "Sama-sama"
+     ],
+     "a": "Maaf",
+     "title": "Ucapan"
+    },
+    {
+     "q": "Orang yang merawat pesakit di hospital?",
+     "opts": [
+      "Doktor",
+      "Guru",
+      "Jurutera"
+     ],
+     "a": "Doktor",
+     "title": "Kerjaya"
+    },
+    {
+     "q": "Orang yang mereka bentuk jambatan dan mesin?",
+     "opts": [
+      "Jurutera",
+      "Doktor",
+      "Guru"
+     ],
+     "a": "Jurutera",
+     "title": "Kerjaya"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Rakan berkata terima kasih kepada anda. Apakah jawapan anda?",
+     "a": [
+      "sama-sama",
+      "sama sama"
+     ]
+    },
+    {
+     "q": "Matahari baru naik dan anda berjumpa pensyarah. Apakah ucapan anda?",
+     "a": [
+      "selamat pagi"
+     ]
+    },
+    {
+     "q": "Rakan bertanya tentang keadaan anda hari ini. Apakah jawapan anda?",
+     "a": [
+      "khabar baik"
+     ]
+    },
+    {
+     "q": "Anda terpijak kaki rakan anda. Apakah yang patut anda katakan?",
+     "a": [
+      "maaf"
+     ]
+    },
+    {
+     "q": "Orang yang merawat pesakit di hospital dipanggil apa?",
+     "a": [
+      "doktor"
+     ]
+    },
+    {
+     "q": "Orang yang mengajar di sekolah dipanggil apa?",
+     "a": [
+      "guru",
+      "cikgu"
+     ]
+    },
+    {
+     "q": "Apakah perkataan Melayu untuk kerja yang kita suka buat pada masa lapang?",
+     "a": [
+      "hobi"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T6",
+   "emoji": "🎓",
+   "minggu": 7,
+   "title": "Kehidupan Pelajar Universiti",
+   "ringkas": "Tempat di kampus, warga universiti dan tugasan.",
+   "words": [
+    {
+     "bm": "perpustakaan",
+     "en": "library",
+     "zh": "图书馆",
+     "py": "túshūguǎn",
+     "g": "tempat",
+     "e": "📚"
+    },
+    {
+     "bm": "dewan kuliah",
+     "en": "lecture hall",
+     "zh": "讲堂",
+     "py": "jiǎngtáng",
+     "g": "tempat",
+     "e": "🏛️"
+    },
+    {
+     "bm": "asrama",
+     "en": "hostel, dormitory",
+     "zh": "宿舍",
+     "py": "sùshè",
+     "g": "tempat",
+     "e": "🏠"
+    },
+    {
+     "bm": "kafe",
+     "en": "cafe, cafeteria",
+     "zh": "食堂",
+     "py": "shítáng",
+     "g": "tempat",
+     "e": "🍽️"
+    },
+    {
+     "bm": "pusat kesihatan",
+     "en": "health centre",
+     "zh": "医疗中心",
+     "py": "yīliáo zhōngxīn",
+     "g": "tempat",
+     "e": "🏥"
+    },
+    {
+     "bm": "pejabat",
+     "en": "office",
+     "zh": "办公室",
+     "py": "bàngōngshì",
+     "g": "tempat",
+     "e": "🏢"
+    },
+    {
+     "bm": "makmal",
+     "en": "laboratory",
+     "zh": "实验室",
+     "py": "shíyànshì",
+     "g": "tempat",
+     "e": "🔬"
+    },
+    {
+     "bm": "surau",
+     "en": "prayer room",
+     "zh": "祈祷室",
+     "py": "qídǎoshì",
+     "g": "tempat",
+     "e": "🕌"
+    },
+    {
+     "bm": "koperasi",
+     "en": "campus co-op shop",
+     "zh": "合作社商店",
+     "py": "hézuòshè shāngdiàn",
+     "g": "tempat",
+     "e": "🏪"
+    },
+    {
+     "bm": "padang",
+     "en": "field",
+     "zh": "操场",
+     "py": "cāochǎng",
+     "g": "tempat",
+     "e": "🏟️"
+    },
+    {
+     "bm": "pensyarah",
+     "en": "lecturer",
+     "zh": "讲师",
+     "py": "jiǎngshī",
+     "g": "orang",
+     "e": "🧑‍🏫"
+    },
+    {
+     "bm": "pelajar",
+     "en": "student",
+     "zh": "学生",
+     "py": "xuéshēng",
+     "g": "orang",
+     "e": "🧑‍🎓"
+    },
+    {
+     "bm": "kawan",
+     "en": "friend",
+     "zh": "朋友",
+     "py": "péngyǒu",
+     "g": "orang",
+     "alt": [
+      "rakan"
+     ]
+    },
+    {
+     "bm": "tugasan",
+     "en": "assignment",
+     "zh": "作业",
+     "py": "zuòyè",
+     "g": "belajar",
+     "e": "📝"
+    },
+    {
+     "bm": "kuliah",
+     "en": "lecture",
+     "zh": "讲课",
+     "py": "jiǎngkè",
+     "g": "belajar"
+    },
+    {
+     "bm": "peperiksaan",
+     "en": "examination",
+     "zh": "考试",
+     "py": "kǎoshì",
+     "g": "belajar"
+    },
+    {
+     "bm": "jadual",
+     "en": "timetable",
+     "zh": "时间表",
+     "py": "shíjiānbiǎo",
+     "g": "belajar",
+     "e": "📅"
+    },
+    {
+     "bm": "mendaftar",
+     "en": "to register",
+     "zh": "注册",
+     "py": "zhùcè",
+     "g": "belajar"
+    },
+    {
+     "bm": "fakulti",
+     "en": "faculty",
+     "zh": "学院",
+     "py": "xuéyuàn",
+     "g": "belajar"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Saya mahu meminjam buku di perpustakaan.",
+     "en": "I want to borrow a book at the library.",
+     "zh": "我想在图书馆借书。",
+     "cloze": "perpustakaan",
+     "opts": [
+      "perpustakaan",
+      "kafe",
+      "padang"
+     ]
+    },
+    {
+     "bm": "Saya tinggal di asrama bersama tiga orang rakan.",
+     "en": "I live in the hostel with three friends.",
+     "zh": "我和三个朋友住在宿舍。",
+     "cloze": "asrama",
+     "opts": [
+      "asrama",
+      "pejabat",
+      "makmal"
+     ]
+    },
+    {
+     "bm": "Kami makan tengah hari di kafe.",
+     "en": "We have lunch at the cafe.",
+     "zh": "我们在食堂吃午饭。",
+     "cloze": "kafe",
+     "opts": [
+      "kafe",
+      "perpustakaan",
+      "surau"
+     ]
+    },
+    {
+     "bm": "Kelas minggu ini diadakan di dewan kuliah.",
+     "en": "This week's class is held in the lecture hall.",
+     "zh": "本周的课在讲堂举行。",
+     "cloze": "dewan kuliah",
+     "opts": [
+      "dewan kuliah",
+      "asrama",
+      "padang"
+     ]
+    },
+    {
+     "bm": "Saya menghantar borang di pejabat.",
+     "en": "I submit the form at the office.",
+     "zh": "我在办公室交表格。",
+     "cloze": "pejabat",
+     "opts": [
+      "pejabat",
+      "kafe",
+      "surau"
+     ]
+    },
+    {
+     "bm": "Pensyarah memberi tugasan kepada pelajar.",
+     "en": "The lecturer gives assignments to the students.",
+     "zh": "讲师给学生布置作业。"
+    },
+    {
+     "bm": "Saya belajar di Universiti Malaysia Perlis.",
+     "en": "I study at Universiti Malaysia Perlis.",
+     "zh": "我在玻璃市马来西亚大学学习。"
+    },
+    {
+     "bm": "Peperiksaan akan diadakan bulan depan.",
+     "en": "The examination will be held next month.",
+     "zh": "考试将在下个月举行。"
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Sulaiman",
+       "Nama saya Sulaiman. Saya berasal dari Yemen."
+      ],
+      [
+       "Mei",
+       "Awak belajar dalam jurusan apa?"
+      ],
+      [
+       "Sulaiman",
+       "Kejuruteraan Mekanikal. Saya baru mendaftar."
+      ],
+      [
+       "Mei",
+       "Awak tinggal di mana?"
+      ],
+      [
+       "Sulaiman",
+       "Saya tinggal di asrama bersama tiga orang rakan. Asrama kami berdekatan dengan kafe."
+      ],
+      [
+       "Mei",
+       "Baguslah. Senang mencari makanan."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Dari negara manakah Sulaiman berasal?",
+       "opts": [
+        "Yemen",
+        "China",
+        "Mesir"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Di manakah Sulaiman tinggal?",
+       "opts": [
+        "Asrama",
+        "Rumah sewa",
+        "Hotel"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah yang berdekatan dengan asrama mereka?",
+       "opts": [
+        "Kafe",
+        "Makmal",
+        "Padang"
+       ],
+       "a": 0
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Wei",
+       "Saya perlu membeli buku tulis. Di mana?"
+      ],
+      [
+       "Rahim",
+       "Pergi ke koperasi. Dekat sahaja dengan dewan kuliah."
+      ],
+      [
+       "Wei",
+       "Terima kasih. Selepas itu saya mahu berjumpa pensyarah."
+      ],
+      [
+       "Rahim",
+       "Pejabat beliau di tingkat dua."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Di manakah Wei boleh membeli buku tulis?",
+       "opts": [
+        "Koperasi",
+        "Perpustakaan",
+        "Pusat kesihatan"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Siapakah yang Wei mahu jumpa selepas itu?",
+       "opts": [
+        "Pensyarah",
+        "Doktor",
+        "Rakan sebilik"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Di manakah pejabat pensyarah itu?",
+       "opts": [
+        "Tingkat dua",
+        "Tingkat satu",
+        "Di asrama"
+       ],
+       "a": 0
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Tempat untuk meminjam buku di kampus?",
+     "opts": [
+      "Perpustakaan",
+      "Kafe",
+      "Asrama"
+     ],
+     "a": "Perpustakaan",
+     "title": "Tempat"
+    },
+    {
+     "q": "Tempat pelajar tinggal dan tidur di kampus?",
+     "opts": [
+      "Asrama",
+      "Pejabat",
+      "Makmal"
+     ],
+     "a": "Asrama",
+     "title": "Tempat"
+    },
+    {
+     "q": "Tempat untuk membeli alat tulis di kampus?",
+     "opts": [
+      "Koperasi",
+      "Surau",
+      "Padang"
+     ],
+     "a": "Koperasi",
+     "title": "Tempat"
+    },
+    {
+     "q": "Tempat untuk bersolat di kampus?",
+     "opts": [
+      "Surau",
+      "Makmal",
+      "Kafe"
+     ],
+     "a": "Surau",
+     "title": "Tempat"
+    },
+    {
+     "q": "Tempat untuk membuat pemeriksaan kesihatan?",
+     "opts": [
+      "Pusat kesihatan",
+      "Koperasi",
+      "Dewan kuliah"
+     ],
+     "a": "Pusat kesihatan",
+     "title": "Tempat"
+    },
+    {
+     "q": "Tempat untuk membuat eksperimen sains?",
+     "opts": [
+      "Makmal",
+      "Perpustakaan",
+      "Asrama"
+     ],
+     "a": "Makmal",
+     "title": "Tempat"
+    },
+    {
+     "q": "Orang yang mengajar di universiti?",
+     "opts": [
+      "Pensyarah",
+      "Pelajar",
+      "Pelayan"
+     ],
+     "a": "Pensyarah",
+     "title": "Warga kampus"
+    },
+    {
+     "q": "Kerja yang diberi oleh pensyarah untuk disiapkan?",
+     "opts": [
+      "Tugasan",
+      "Jadual",
+      "Kuliah"
+     ],
+     "a": "Tugasan",
+     "title": "Belajar"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Di manakah pelajar meminjam buku?",
+     "a": [
+      "perpustakaan"
+     ]
+    },
+    {
+     "q": "Di manakah pelajar tinggal semasa belajar di kampus?",
+     "a": [
+      "asrama"
+     ]
+    },
+    {
+     "q": "Siapakah yang mengajar di universiti?",
+     "a": [
+      "pensyarah"
+     ]
+    },
+    {
+     "q": "Di manakah kita membeli makanan di kampus?",
+     "a": [
+      "kafe"
+     ]
+    },
+    {
+     "q": "Apakah nama kerja yang diberi oleh pensyarah untuk disiapkan di rumah?",
+     "a": [
+      "tugasan"
+     ]
+    },
+    {
+     "q": "Di manakah kita membuat pemeriksaan kesihatan?",
+     "a": [
+      "pusat kesihatan"
+     ]
+    },
+    {
+     "q": "Apakah nama ujian besar pada hujung semester?",
+     "a": [
+      "peperiksaan"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T7",
+   "emoji": "🛒",
+   "minggu": 9,
+   "title": "Membeli Barangan",
+   "ringkas": "Harga, barang di kedai dan cara membeli.",
+   "words": [
+    {
+     "bm": "murah",
+     "en": "cheap",
+     "zh": "便宜",
+     "py": "piányí",
+     "g": "harga"
+    },
+    {
+     "bm": "mahal",
+     "en": "expensive",
+     "zh": "昂贵",
+     "py": "ángguì",
+     "g": "harga"
+    },
+    {
+     "bm": "baki",
+     "en": "change (money returned)",
+     "zh": "找零",
+     "py": "zhǎolíng",
+     "g": "harga"
+    },
+    {
+     "bm": "bayar",
+     "en": "pay",
+     "zh": "付款",
+     "py": "fùkuǎn",
+     "g": "harga"
+    },
+    {
+     "bm": "duit",
+     "en": "money",
+     "zh": "钱",
+     "py": "qián",
+     "g": "harga",
+     "e": "💵"
+    },
+    {
+     "bm": "harga",
+     "en": "price",
+     "zh": "价格",
+     "py": "jiàgé",
+     "g": "harga"
+    },
+    {
+     "bm": "berapa",
+     "en": "how much, how many",
+     "zh": "多少",
+     "py": "duōshǎo",
+     "g": "harga"
+    },
+    {
+     "bm": "penjual",
+     "en": "seller",
+     "zh": "卖家，售货员",
+     "py": "màijiā",
+     "g": "harga",
+     "e": "🧑‍💼"
+    },
+    {
+     "bm": "ayam",
+     "en": "chicken",
+     "zh": "鸡",
+     "py": "jī",
+     "g": "barang",
+     "e": "🐔"
+    },
+    {
+     "bm": "ikan",
+     "en": "fish",
+     "zh": "鱼",
+     "py": "yú",
+     "g": "barang",
+     "e": "🐟"
+    },
+    {
+     "bm": "sayur",
+     "en": "vegetables",
+     "zh": "蔬菜",
+     "py": "shūcài",
+     "g": "barang",
+     "e": "🥬"
+    },
+    {
+     "bm": "roti",
+     "en": "bread",
+     "zh": "面包",
+     "py": "miànbāo",
+     "g": "barang",
+     "e": "🍞"
+    },
+    {
+     "bm": "gula",
+     "en": "sugar",
+     "zh": "糖",
+     "py": "táng",
+     "g": "barang"
+    },
+    {
+     "bm": "garam",
+     "en": "salt",
+     "zh": "盐",
+     "py": "yán",
+     "g": "barang",
+     "e": "🧂"
+    },
+    {
+     "bm": "tepung",
+     "en": "flour",
+     "zh": "面粉",
+     "py": "miànfěn",
+     "g": "barang",
+     "e": "🌾"
+    },
+    {
+     "bm": "beras",
+     "en": "rice (uncooked)",
+     "zh": "大米",
+     "py": "dàmǐ",
+     "g": "barang"
+    },
+    {
+     "bm": "santan",
+     "en": "coconut milk",
+     "zh": "椰浆",
+     "py": "yējiāng",
+     "g": "barang",
+     "e": "🥥"
+    },
+    {
+     "bm": "bawang putih",
+     "en": "garlic",
+     "zh": "大蒜",
+     "py": "dàsuàn",
+     "g": "barang",
+     "e": "🧄"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Berapa harga ikan ini?",
+     "en": "How much is this fish?",
+     "zh": "这条鱼多少钱？",
+     "cloze": "Berapa",
+     "opts": [
+      "Berapa",
+      "Siapa",
+      "Mana"
+     ]
+    },
+    {
+     "bm": "Ayam ini terlalu mahal.",
+     "en": "This chicken is too expensive.",
+     "zh": "这只鸡太贵了。"
+    },
+    {
+     "bm": "Boleh kurang harga sedikit?",
+     "en": "Can you lower the price a little?",
+     "zh": "可以便宜一点吗？"
+    },
+    {
+     "bm": "Ini duit baki awak.",
+     "en": "This is your change.",
+     "zh": "这是您的找零。",
+     "cloze": "baki",
+     "opts": [
+      "baki",
+      "harga",
+      "ayam"
+     ]
+    },
+    {
+     "bm": "Saya mahu membeli gula dan garam.",
+     "en": "I want to buy sugar and salt.",
+     "zh": "我想买糖和盐。"
+    },
+    {
+     "bm": "Saya bayar duit kepada penjual.",
+     "en": "I pay money to the seller.",
+     "zh": "我把钱付给卖家。",
+     "cloze": "kepada",
+     "opts": [
+      "kepada",
+      "di",
+      "dari"
+     ]
+    },
+    {
+     "bm": "Semuanya tiga puluh ringgit sahaja.",
+     "en": "Thirty ringgit for everything.",
+     "zh": "一共只要三十令吉。"
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Kassim",
+       "Selamat petang."
+      ],
+      [
+       "Penjual",
+       "Selamat petang. Apa yang boleh saya bantu?"
+      ],
+      [
+       "Kassim",
+       "Boleh dapatkan barang-barang ini? Saya perlukan gula, garam, tepung, roti dan beras."
+      ],
+      [
+       "Penjual",
+       "Ya, boleh."
+      ],
+      [
+       "Kassim",
+       "Berapa harga semuanya?"
+      ],
+      [
+       "Penjual",
+       "Tiga puluh ringgit sahaja."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Apakah yang Kassim perlukan?",
+       "opts": [
+        "Gula, garam, tepung, roti dan beras",
+        "Ayam, ikan dan sayur",
+        "Santan dan bawang putih"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Berapakah harga semuanya?",
+       "opts": [
+        "Sepuluh ringgit",
+        "Tiga puluh ringgit",
+        "Empat puluh ringgit"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Kassim bercakap dengan siapa?",
+       "opts": [
+        "Pemandu teksi",
+        "Penjual",
+        "Pensyarah"
+       ],
+       "a": 1
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Siti",
+       "Saya mahu membeli bahan untuk memasak kari ikan."
+      ],
+      [
+       "Makcik",
+       "Semuanya empat puluh ringgit sahaja."
+      ],
+      [
+       "Siti",
+       "Bolehkah kurang harga itu sedikit, makcik?"
+      ],
+      [
+       "Makcik",
+       "Maaf. Harga ini sudah murah. Ini duit baki sepuluh ringgit."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Siti mahu memasak apa?",
+       "opts": [
+        "Kari ikan",
+        "Nasi goreng",
+        "Roti canai"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah yang Siti minta?",
+       "opts": [
+        "Harga yang lebih rendah",
+        "Lebih banyak ikan",
+        "Beg plastik"
+       ],
+       "a": 0,
+       "why": "Siti minta kurang harga."
+      },
+      {
+       "q": "Berapakah duit yang Siti beri kepada makcik?",
+       "opts": [
+        "Empat puluh ringgit",
+        "Lima puluh ringgit",
+        "Enam puluh ringgit"
+       ],
+       "a": 1,
+       "why": "Harga empat puluh ringgit, baki sepuluh ringgit."
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Harga barang itu rendah. Apakah kata adjektif yang sesuai?",
+     "opts": [
+      "Murah",
+      "Mahal",
+      "Berat"
+     ],
+     "a": "Murah",
+     "title": "Kosa kata"
+    },
+    {
+     "q": "Harga barang itu tinggi. Apakah kata adjektif yang sesuai?",
+     "opts": [
+      "Mahal",
+      "Murah",
+      "Ringan"
+     ],
+     "a": "Mahal",
+     "title": "Kosa kata"
+    },
+    {
+     "q": "Anda bayar RM50 untuk barang berharga RM35. Apakah nama wang yang dipulangkan?",
+     "opts": [
+      "Baki",
+      "Harga",
+      "Bil"
+     ],
+     "a": "Baki",
+     "why": "Baki ialah wang yang dipulangkan kepada pembeli.",
+     "title": "Kosa kata"
+    },
+    {
+     "q": "Siapakah yang menjual barang di kedai?",
+     "opts": [
+      "Penjual",
+      "Pembeli",
+      "Pelancong"
+     ],
+     "a": "Penjual",
+     "title": "Kosa kata"
+    },
+    {
+     "q": "Anda hendak memasak nasi. Apakah yang perlu dibeli?",
+     "opts": [
+      "Beras",
+      "Tepung",
+      "Santan"
+     ],
+     "a": "Beras",
+     "why": "Beras belum dimasak, nasi sudah dimasak.",
+     "title": "Kosa kata"
+    },
+    {
+     "q": "Apakah perbezaan antara beras dan nasi?",
+     "opts": [
+      "Beras belum dimasak, nasi sudah dimasak",
+      "Beras sudah dimasak, nasi belum",
+      "Kedua-duanya sama"
+     ],
+     "a": "Beras belum dimasak, nasi sudah dimasak",
+     "title": "Kosa kata"
+    },
+    {
+     "q": "Bahan yang diperah daripada kelapa untuk memasak kari?",
+     "opts": [
+      "Santan",
+      "Tepung",
+      "Garam"
+     ],
+     "a": "Santan",
+     "title": "Kosa kata"
+    },
+    {
+     "q": "Apakah mata wang yang digunakan di Malaysia?",
+     "opts": [
+      "Ringgit",
+      "Rupiah",
+      "Baht"
+     ],
+     "a": "Ringgit",
+     "title": "Wang"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Harga ikan lapan ringgit. Saya beri dua puluh ringgit. Berapa baki saya?",
+     "a": [
+      "dua belas ringgit",
+      "dua belas",
+      "12",
+      "rm12"
+     ]
+    },
+    {
+     "q": "Barang yang harganya rendah. Apakah kata adjektifnya?",
+     "a": [
+      "murah"
+     ]
+    },
+    {
+     "q": "Barang yang harganya tinggi. Apakah kata adjektifnya?",
+     "a": [
+      "mahal"
+     ]
+    },
+    {
+     "q": "Siapakah yang menjual barang di kedai?",
+     "a": [
+      "penjual"
+     ]
+    },
+    {
+     "q": "Saya hendak membuat roti. Saya perlu beli apa?",
+     "a": [
+      "tepung"
+     ]
+    },
+    {
+     "q": "Apakah nama mata wang Malaysia?",
+     "a": [
+      "ringgit"
+     ]
+    },
+    {
+     "q": "Saya hendak memasak nasi. Saya perlu beli apa?",
+     "a": [
+      "beras"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T8",
+   "emoji": "🍛",
+   "minggu": 10,
+   "title": "Makanan Tempatan dan Perbualan di Restoran",
+   "ringkas": "Makanan Malaysia, rasa dan memesan di restoran.",
+   "words": [
+    {
+     "bm": "nasi lemak",
+     "en": "coconut rice with sambal",
+     "zh": "椰浆饭",
+     "py": "yējiāng fàn",
+     "g": "makanan",
+     "e": "🍚"
+    },
+    {
+     "bm": "roti canai",
+     "en": "Indian flatbread",
+     "zh": "印度煎饼",
+     "py": "yìndù jiānbǐng",
+     "g": "makanan",
+     "e": "🫓"
+    },
+    {
+     "bm": "nasi goreng",
+     "en": "fried rice",
+     "zh": "炒饭",
+     "py": "chǎofàn",
+     "g": "makanan",
+     "e": "🍛"
+    },
+    {
+     "bm": "ayam goreng",
+     "en": "fried chicken",
+     "zh": "炸鸡",
+     "py": "zhájī",
+     "g": "makanan",
+     "e": "🍗"
+    },
+    {
+     "bm": "sedap",
+     "en": "delicious",
+     "zh": "好吃",
+     "py": "hǎochī",
+     "g": "rasa"
+    },
+    {
+     "bm": "pedas",
+     "en": "spicy",
+     "zh": "辣",
+     "py": "là",
+     "g": "rasa",
+     "e": "🌶️"
+    },
+    {
+     "bm": "manis",
+     "en": "sweet",
+     "zh": "甜",
+     "py": "tián",
+     "g": "rasa",
+     "e": "🍬"
+    },
+    {
+     "bm": "masin",
+     "en": "salty",
+     "zh": "咸",
+     "py": "xián",
+     "g": "rasa"
+    },
+    {
+     "bm": "teh tarik",
+     "en": "pulled milk tea",
+     "zh": "拉茶",
+     "py": "lā chá",
+     "g": "minuman",
+     "e": "🍵"
+    },
+    {
+     "bm": "air kosong",
+     "en": "plain water",
+     "zh": "白开水",
+     "py": "báikāishuǐ",
+     "g": "minuman",
+     "e": "💧"
+    },
+    {
+     "bm": "kopi O",
+     "en": "black coffee",
+     "zh": "黑咖啡",
+     "py": "hēi kāfēi",
+     "g": "minuman",
+     "e": "☕"
+    },
+    {
+     "bm": "bungkus",
+     "en": "take away",
+     "zh": "打包",
+     "py": "dǎbāo",
+     "g": "restoran",
+     "e": "🛍️"
+    },
+    {
+     "bm": "pelayan",
+     "en": "waiter, waitress",
+     "zh": "服务员",
+     "py": "fúwùyuán",
+     "g": "restoran"
+    },
+    {
+     "bm": "bil",
+     "en": "bill",
+     "zh": "账单",
+     "py": "zhàngdān",
+     "g": "restoran",
+     "e": "🧾"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Beri saya nasi lemak dan teh tarik.",
+     "en": "Give me nasi lemak and teh tarik.",
+     "zh": "请给我椰浆饭和拉茶。"
+    },
+    {
+     "bm": "Gula membuat teh menjadi manis.",
+     "en": "Sugar makes tea sweet.",
+     "zh": "糖让茶变甜。",
+     "cloze": "manis",
+     "opts": [
+      "manis",
+      "pedas",
+      "masin"
+     ]
+    },
+    {
+     "bm": "Garam membuat makanan menjadi masin.",
+     "en": "Salt makes food salty.",
+     "zh": "盐让食物变咸。",
+     "cloze": "masin",
+     "opts": [
+      "masin",
+      "manis",
+      "pedas"
+     ]
+    },
+    {
+     "bm": "Awak mahu makan di sini atau bungkus?",
+     "en": "Do you want to eat here or take away?",
+     "zh": "您要在这里吃还是打包？",
+     "cloze": "bungkus",
+     "opts": [
+      "bungkus",
+      "bayar",
+      "bil"
+     ]
+    },
+    {
+     "bm": "Kira semua sekali.",
+     "en": "Add everything together.",
+     "zh": "一起算。"
+    },
+    {
+     "bm": "Berapa semua?",
+     "en": "How much altogether?",
+     "zh": "一共多少钱？"
+    },
+    {
+     "bm": "Nasi goreng ini sangat sedap.",
+     "en": "This fried rice is very delicious.",
+     "zh": "这份炒饭很好吃。"
+    },
+    {
+     "bm": "Saya mahu air kosong.",
+     "en": "I want plain water.",
+     "zh": "我要白开水。"
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Ali",
+       "Ini apa?"
+      ],
+      [
+       "Pelayan",
+       "Ini kari daging lembu."
+      ],
+      [
+       "Ali",
+       "Beri saya nasi separuh dan kari daging itu."
+      ],
+      [
+       "Pelayan",
+       "Awak mahu makan di sini atau bungkus?"
+      ],
+      [
+       "Ali",
+       "Bungkus. Saya juga mahu sayur. Berapa harga semuanya?"
+      ],
+      [
+       "Pelayan",
+       "Enam ringgit sahaja."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Apakah lauk yang Ali pilih?",
+       "opts": [
+        "Kari daging lembu",
+        "Ayam goreng",
+        "Ikan bakar"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Ali mahu makan di sini atau bungkus?",
+       "opts": [
+        "Makan di sini",
+        "Bungkus",
+        "Tidak makan"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Berapakah harga semuanya?",
+       "opts": [
+        "Tiga ringgit",
+        "Enam ringgit",
+        "Dua puluh ringgit"
+       ],
+       "a": 1
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Ali",
+       "Berapa semua?"
+      ],
+      [
+       "Pelayan",
+       "Awak mahu bayar semua sekali atau berasingan?"
+      ],
+      [
+       "Ali",
+       "Kira semua sekali."
+      ],
+      [
+       "Pelayan",
+       "Semuanya dua puluh ringgit."
+      ],
+      [
+       "Ahmed",
+       "Mengapa awak mahu membayar untuk saya?"
+      ],
+      [
+       "Ali",
+       "Saya mahu belanja awak makan malam ini. Hari ini saya dapat gaji."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Siapakah yang membayar bil?",
+       "opts": [
+        "Ali",
+        "Ahmed",
+        "Pelayan"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Mengapa Ali membayar?",
+       "opts": [
+        "Dia dapat gaji",
+        "Makanan itu murah",
+        "Ahmed tiada duit"
+       ],
+       "a": 0,
+       "why": "Ali kata hari ini dia dapat gaji."
+      },
+      {
+       "q": "Bagaimanakah mereka membayar?",
+       "opts": [
+        "Berasingan",
+        "Semua sekali",
+        "Tidak membayar"
+       ],
+       "a": 1
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Makanan yang mengandungi banyak cili rasanya bagaimana?",
+     "opts": [
+      "Pedas",
+      "Manis",
+      "Masin"
+     ],
+     "a": "Pedas",
+     "title": "Rasa"
+    },
+    {
+     "q": "Gula membuat minuman menjadi apa?",
+     "opts": [
+      "Manis",
+      "Pedas",
+      "Masin"
+     ],
+     "a": "Manis",
+     "title": "Rasa"
+    },
+    {
+     "q": "Garam membuat makanan menjadi apa?",
+     "opts": [
+      "Masin",
+      "Manis",
+      "Sedap"
+     ],
+     "a": "Masin",
+     "title": "Rasa"
+    },
+    {
+     "q": "Anda hendak membawa makanan pulang. Apakah yang anda katakan kepada pelayan?",
+     "opts": [
+      "Bungkus",
+      "Kira semua sekali",
+      "Berasingan"
+     ],
+     "a": "Bungkus",
+     "title": "Restoran"
+    },
+    {
+     "q": "Siapakah yang mengambil pesanan di restoran?",
+     "opts": [
+      "Pelayan",
+      "Penjual",
+      "Pelancong"
+     ],
+     "a": "Pelayan",
+     "title": "Restoran"
+    },
+    {
+     "q": "Nasi yang dimasak dengan santan dan dimakan dengan sambal?",
+     "opts": [
+      "Nasi lemak",
+      "Nasi goreng",
+      "Roti canai"
+     ],
+     "a": "Nasi lemak",
+     "title": "Makanan"
+    },
+    {
+     "q": "Apakah minuman yang dibuat daripada teh dan susu, dan ditarik?",
+     "opts": [
+      "Teh tarik",
+      "Kopi O",
+      "Air kosong"
+     ],
+     "a": "Teh tarik",
+     "title": "Minuman"
+    },
+    {
+     "q": "Anda tidak mahu minuman manis. Apakah yang anda pesan?",
+     "opts": [
+      "Air kosong",
+      "Teh tarik",
+      "Kopi manis"
+     ],
+     "a": "Air kosong",
+     "title": "Minuman"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Makanan yang rasanya seperti cili. Apakah rasanya?",
+     "a": [
+      "pedas"
+     ]
+    },
+    {
+     "q": "Gula membuat air menjadi apa?",
+     "a": [
+      "manis"
+     ]
+    },
+    {
+     "q": "Garam membuat makanan menjadi apa?",
+     "a": [
+      "masin"
+     ]
+    },
+    {
+     "q": "Saya mahu bawa makanan pulang, bukan makan di restoran. Apa saya kata kepada pelayan?",
+     "a": [
+      "bungkus"
+     ]
+    },
+    {
+     "q": "Siapakah yang membawa makanan kepada pelanggan di restoran?",
+     "a": [
+      "pelayan"
+     ]
+    },
+    {
+     "q": "Makanan itu enak. Apakah perkataan lain untuk enak?",
+     "a": [
+      "sedap"
+     ]
+    },
+    {
+     "q": "Saya tidak mahu air manis. Saya mahu minum apa?",
+     "a": [
+      "air kosong",
+      "kosong"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T9",
+   "emoji": "🎉",
+   "minggu": 11,
+   "title": "Perayaan di Malaysia",
+   "ringkas": "Hari Raya, Tahun Baru Cina, Deepavali, Kaamatan dan Gawai.",
+   "words": [
+    {
+     "bm": "perayaan",
+     "en": "festival, celebration",
+     "zh": "节日",
+     "py": "jiérì",
+     "g": "umum",
+     "e": "🎉"
+    },
+    {
+     "bm": "menyambut",
+     "en": "to celebrate",
+     "zh": "庆祝",
+     "py": "qìngzhù",
+     "g": "umum",
+     "alt": [
+      "sambut"
+     ]
+    },
+    {
+     "bm": "rumah terbuka",
+     "en": "open house",
+     "zh": "开放门户",
+     "py": "kāifàng ménhù",
+     "g": "umum",
+     "e": "🏡"
+    },
+    {
+     "bm": "tetamu",
+     "en": "guest",
+     "zh": "客人",
+     "py": "kèrén",
+     "g": "umum"
+    },
+    {
+     "bm": "kad ucapan",
+     "en": "greeting card",
+     "zh": "贺卡",
+     "py": "hèkǎ",
+     "g": "umum",
+     "e": "💌"
+    },
+    {
+     "bm": "bunga api",
+     "en": "fireworks",
+     "zh": "烟花",
+     "py": "yānhuā",
+     "g": "umum",
+     "e": "🎆"
+    },
+    {
+     "bm": "Hari Raya Aidilfitri",
+     "en": "Eid celebrated by Muslims",
+     "zh": "开斋节",
+     "py": "kāizhāijié",
+     "g": "perayaan",
+     "e": "🌙"
+    },
+    {
+     "bm": "Tahun Baru Cina",
+     "en": "Chinese New Year",
+     "zh": "农历新年",
+     "py": "nónglì xīnnián",
+     "g": "perayaan",
+     "e": "🧧"
+    },
+    {
+     "bm": "Deepavali",
+     "en": "Deepavali, the festival of lights",
+     "zh": "屠妖节",
+     "py": "túyāojié",
+     "g": "perayaan",
+     "e": "🪔"
+    },
+    {
+     "bm": "Krismas",
+     "en": "Christmas",
+     "zh": "圣诞节",
+     "py": "shèngdànjié",
+     "g": "perayaan",
+     "e": "🎄"
+    },
+    {
+     "bm": "Pesta Kaamatan",
+     "en": "harvest festival in Sabah",
+     "zh": "沙巴丰收节",
+     "py": "shābā fēngshōujié",
+     "g": "perayaan",
+     "e": "🌾"
+    },
+    {
+     "bm": "Hari Gawai",
+     "en": "Gawai festival in Sarawak",
+     "zh": "砂拉越达雅节",
+     "py": "shālāyuè dáyǎjié",
+     "g": "perayaan",
+     "e": "🌾"
+    },
+    {
+     "bm": "Wesak",
+     "en": "Wesak, celebrated by Buddhists",
+     "zh": "卫塞节",
+     "py": "wèisāijié",
+     "g": "perayaan",
+     "e": "🪷"
+    },
+    {
+     "bm": "ketupat",
+     "en": "rice cake wrapped in leaves",
+     "zh": "马来粽",
+     "py": "mǎláizòng",
+     "g": "makanan",
+     "e": "🍙"
+    },
+    {
+     "bm": "rendang",
+     "en": "rendang, slow-cooked spiced meat",
+     "zh": "仁当",
+     "py": "réndāng",
+     "g": "makanan",
+     "e": "🍖"
+    },
+    {
+     "bm": "kuih",
+     "en": "traditional cakes",
+     "zh": "糕点",
+     "py": "gāodiǎn",
+     "g": "makanan",
+     "e": "🍡"
+    },
+    {
+     "bm": "angpau",
+     "en": "red packet of money",
+     "zh": "红包",
+     "py": "hóngbāo",
+     "g": "hadiah",
+     "e": "🧧"
+    },
+    {
+     "bm": "duit raya",
+     "en": "money given at Hari Raya",
+     "zh": "开斋节红包",
+     "py": "kāizhāijié hóngbāo",
+     "g": "hadiah",
+     "e": "💰"
+    },
+    {
+     "bm": "tanglung",
+     "en": "lantern",
+     "zh": "灯笼",
+     "py": "dēnglóng",
+     "g": "hadiah",
+     "e": "🏮"
+    },
+    {
+     "bm": "masjid",
+     "en": "mosque",
+     "zh": "清真寺",
+     "py": "qīngzhēnsì",
+     "g": "tempat",
+     "e": "🕌"
+    },
+    {
+     "bm": "kuil",
+     "en": "Hindu temple",
+     "zh": "印度庙",
+     "py": "yìndùmiào",
+     "g": "tempat",
+     "e": "🛕"
+    },
+    {
+     "bm": "gereja",
+     "en": "church",
+     "zh": "教堂",
+     "py": "jiàotáng",
+     "g": "tempat",
+     "e": "⛪"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Orang Islam menyambut Hari Raya Aidilfitri.",
+     "en": "Muslims celebrate Hari Raya Aidilfitri.",
+     "zh": "穆斯林庆祝开斋节。"
+    },
+    {
+     "bm": "Kami makan ketupat dan rendang pada Hari Raya.",
+     "en": "We eat ketupat and rendang at Hari Raya.",
+     "zh": "我们在开斋节吃马来粽和仁当。"
+    },
+    {
+     "bm": "Pada Tahun Baru Cina, orang dewasa memberi angpau kepada kanak-kanak.",
+     "en": "At Chinese New Year, adults give red packets to children.",
+     "zh": "农历新年时，大人给孩子红包。",
+     "cloze": "angpau",
+     "opts": [
+      "angpau",
+      "ketupat",
+      "tanglung"
+     ]
+    },
+    {
+     "bm": "Pesta Kaamatan disambut di negeri Sabah.",
+     "en": "Pesta Kaamatan is celebrated in Sabah.",
+     "zh": "丰收节在沙巴庆祝。",
+     "cloze": "Sabah",
+     "opts": [
+      "Sabah",
+      "Sarawak",
+      "Melaka"
+     ]
+    },
+    {
+     "bm": "Hari Gawai disambut di negeri Sarawak.",
+     "en": "Hari Gawai is celebrated in Sarawak.",
+     "zh": "达雅节在砂拉越庆祝。",
+     "cloze": "Sarawak",
+     "opts": [
+      "Sarawak",
+      "Sabah",
+      "Kedah"
+     ]
+    },
+    {
+     "bm": "Deepavali ialah perayaan cahaya.",
+     "en": "Deepavali is the festival of lights.",
+     "zh": "屠妖节是光明节。"
+    },
+    {
+     "bm": "Kami mengadakan rumah terbuka dan menjemput tetamu.",
+     "en": "We hold an open house and invite guests.",
+     "zh": "我们举办开放门户并邀请客人。"
+    },
+    {
+     "bm": "Kanak-kanak menerima duit raya daripada orang dewasa.",
+     "en": "Children receive festive money from adults.",
+     "zh": "孩子们从大人那里收到节日红包。"
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Mei",
+       "Minggu depan cuti. Awak buat apa?"
+      ],
+      [
+       "Aisyah",
+       "Keluarga saya menyambut Hari Raya Aidilfitri. Kami akan mengadakan rumah terbuka."
+      ],
+      [
+       "Mei",
+       "Apakah makanan yang disediakan?"
+      ],
+      [
+       "Aisyah",
+       "Ketupat, rendang dan bermacam-macam kuih. Jemput datang."
+      ],
+      [
+       "Mei",
+       "Terima kasih. Saya akan datang bersama rakan saya."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Perayaan apakah yang disambut oleh keluarga Aisyah?",
+       "opts": [
+        "Hari Raya Aidilfitri",
+        "Tahun Baru Cina",
+        "Deepavali"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah makanan yang disediakan?",
+       "opts": [
+        "Ketupat, rendang dan kuih",
+        "Nasi goreng dan teh tarik",
+        "Roti canai dan kari"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah yang Aisyah adakan di rumahnya?",
+       "opts": [
+        "Rumah terbuka",
+        "Majlis perkahwinan",
+        "Kelas memasak"
+       ],
+       "a": 0
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Rahim",
+       "Mei, bila Tahun Baru Cina tahun ini?"
+      ],
+      [
+       "Mei",
+       "Bulan Februari. Kami akan balik ke kampung."
+      ],
+      [
+       "Rahim",
+       "Apakah yang kanak-kanak terima pada hari itu?"
+      ],
+      [
+       "Mei",
+       "Mereka menerima angpau daripada orang dewasa."
+      ],
+      [
+       "Rahim",
+       "Sama juga dengan duit raya kami."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Bilakah Tahun Baru Cina disambut tahun itu?",
+       "opts": [
+        "Bulan Februari",
+        "Bulan Mei",
+        "Bulan Disember"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah yang kanak-kanak terima pada Tahun Baru Cina?",
+       "opts": [
+        "Angpau",
+        "Ketupat",
+        "Tanglung"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Apakah nama pemberian yang sama pada Hari Raya?",
+       "opts": [
+        "Duit raya",
+        "Kad ucapan",
+        "Bunga api"
+       ],
+       "a": 0
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Perayaan yang disambut oleh orang Islam selepas berpuasa sebulan?",
+     "opts": [
+      "Hari Raya Aidilfitri",
+      "Deepavali",
+      "Wesak"
+     ],
+     "a": "Hari Raya Aidilfitri",
+     "title": "Perayaan"
+    },
+    {
+     "q": "Perayaan cahaya yang disambut oleh masyarakat India beragama Hindu?",
+     "opts": [
+      "Deepavali",
+      "Wesak",
+      "Pesta Kaamatan"
+     ],
+     "a": "Deepavali",
+     "title": "Perayaan"
+    },
+    {
+     "q": "Perayaan yang disambut oleh penganut agama Buddha?",
+     "opts": [
+      "Wesak",
+      "Deepavali",
+      "Krismas"
+     ],
+     "a": "Wesak",
+     "title": "Perayaan"
+    },
+    {
+     "q": "Pesta Kaamatan disambut di negeri mana?",
+     "opts": [
+      "Sabah",
+      "Sarawak",
+      "Johor"
+     ],
+     "a": "Sabah",
+     "why": "Pesta Kaamatan ialah pesta menuai masyarakat Kadazan-Dusun di Sabah.",
+     "title": "Perayaan"
+    },
+    {
+     "q": "Hari Gawai disambut di negeri mana?",
+     "opts": [
+      "Sarawak",
+      "Sabah",
+      "Perlis"
+     ],
+     "a": "Sarawak",
+     "why": "Hari Gawai ialah pesta menuai masyarakat Dayak di Sarawak.",
+     "title": "Perayaan"
+    },
+    {
+     "q": "Makanan yang terkenal pada Hari Raya Aidilfitri?",
+     "opts": [
+      "Ketupat",
+      "Tanglung",
+      "Angpau"
+     ],
+     "a": "Ketupat",
+     "title": "Makanan"
+    },
+    {
+     "q": "Apakah yang diberi kepada kanak-kanak pada Tahun Baru Cina?",
+     "opts": [
+      "Angpau",
+      "Ketupat",
+      "Kad ucapan"
+     ],
+     "a": "Angpau",
+     "title": "Perayaan"
+    },
+    {
+     "q": "Orang Islam beribadat di mana?",
+     "opts": [
+      "Masjid",
+      "Kuil",
+      "Gereja"
+     ],
+     "a": "Masjid",
+     "title": "Tempat ibadat"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Apakah nama duit dalam sampul merah yang diberi pada Tahun Baru Cina?",
+     "a": [
+      "angpau"
+     ]
+    },
+    {
+     "q": "Apakah nama perayaan cahaya bagi masyarakat India beragama Hindu?",
+     "a": [
+      "deepavali"
+     ]
+    },
+    {
+     "q": "Di negeri manakah Pesta Kaamatan disambut?",
+     "a": [
+      "sabah"
+     ]
+    },
+    {
+     "q": "Di negeri manakah Hari Gawai disambut?",
+     "a": [
+      "sarawak"
+     ]
+    },
+    {
+     "q": "Apakah nama makanan daripada beras yang dibungkus dengan daun dan dimakan pada Hari Raya?",
+     "a": [
+      "ketupat"
+     ]
+    },
+    {
+     "q": "Apakah nama majlis apabila kita membuka rumah untuk menerima tetamu pada hari perayaan?",
+     "a": [
+      "rumah terbuka"
+     ]
+    },
+    {
+     "q": "Orang Islam beribadat di tempat yang dipanggil apa?",
+     "a": [
+      "masjid"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T10",
+   "emoji": "🏝️",
+   "minggu": 12,
+   "title": "Percutian di Malaysia",
+   "ringkas": "Destinasi pelancongan, pakej dan bertanya tentang tempat.",
+   "words": [
+    {
+     "bm": "percutian",
+     "en": "holiday",
+     "zh": "假期",
+     "py": "jiàqī",
+     "g": "umum",
+     "e": "🧳"
+    },
+    {
+     "bm": "melancong",
+     "en": "to travel for leisure",
+     "zh": "旅游",
+     "py": "lǚyóu",
+     "g": "umum"
+    },
+    {
+     "bm": "pelancong",
+     "en": "tourist",
+     "zh": "游客",
+     "py": "yóukè",
+     "g": "umum",
+     "e": "📸"
+    },
+    {
+     "bm": "destinasi",
+     "en": "destination",
+     "zh": "目的地",
+     "py": "mùdìdì",
+     "g": "umum"
+    },
+    {
+     "bm": "pakej",
+     "en": "package",
+     "zh": "配套",
+     "py": "pèitào",
+     "g": "umum"
+    },
+    {
+     "bm": "tiket",
+     "en": "ticket",
+     "zh": "票",
+     "py": "piào",
+     "g": "umum",
+     "e": "🎫"
+    },
+    {
+     "bm": "hotel",
+     "en": "hotel",
+     "zh": "酒店",
+     "py": "jiǔdiàn",
+     "g": "umum",
+     "e": "🏨"
+    },
+    {
+     "bm": "bilik",
+     "en": "room",
+     "zh": "房间",
+     "py": "fángjiān",
+     "g": "umum",
+     "e": "🛏️"
+    },
+    {
+     "bm": "bajet",
+     "en": "budget",
+     "zh": "预算",
+     "py": "yùsuàn",
+     "g": "umum"
+    },
+    {
+     "bm": "pantai",
+     "en": "beach",
+     "zh": "海滩",
+     "py": "hǎitān",
+     "g": "tempat",
+     "e": "🏖️"
+    },
+    {
+     "bm": "pulau",
+     "en": "island",
+     "zh": "岛",
+     "py": "dǎo",
+     "g": "tempat",
+     "e": "🏝️"
+    },
+    {
+     "bm": "gunung",
+     "en": "mountain",
+     "zh": "山",
+     "py": "shān",
+     "g": "tempat",
+     "e": "⛰️"
+    },
+    {
+     "bm": "air terjun",
+     "en": "waterfall",
+     "zh": "瀑布",
+     "py": "pùbù",
+     "g": "tempat",
+     "e": "💦"
+    },
+    {
+     "bm": "hutan",
+     "en": "forest",
+     "zh": "森林",
+     "py": "sēnlín",
+     "g": "tempat",
+     "e": "🌳"
+    },
+    {
+     "bm": "muzium",
+     "en": "museum",
+     "zh": "博物馆",
+     "py": "bówùguǎn",
+     "g": "tempat",
+     "e": "🏛️"
+    },
+    {
+     "bm": "menyelam",
+     "en": "to dive",
+     "zh": "潜水",
+     "py": "qiánshuǐ",
+     "g": "aktiviti",
+     "e": "🤿"
+    },
+    {
+     "bm": "mendaki",
+     "en": "to climb, to hike",
+     "zh": "爬山",
+     "py": "páshān",
+     "g": "aktiviti",
+     "e": "🥾"
+    },
+    {
+     "bm": "berenang",
+     "en": "to swim",
+     "zh": "游泳",
+     "py": "yóuyǒng",
+     "g": "aktiviti",
+     "e": "🏊"
+    },
+    {
+     "bm": "menarik",
+     "en": "interesting",
+     "zh": "有趣",
+     "py": "yǒuqù",
+     "g": "sifat"
+    },
+    {
+     "bm": "bersejarah",
+     "en": "historical",
+     "zh": "有历史的",
+     "py": "yǒu lìshǐ de",
+     "g": "sifat"
+    },
+    {
+     "bm": "pemandangan",
+     "en": "scenery, view",
+     "zh": "风景",
+     "py": "fēngjǐng",
+     "g": "sifat",
+     "e": "🌄"
+    }
+   ],
+   "sentences": [
+    {
+     "bm": "Saya mahu melancong ke Pulau Langkawi.",
+     "en": "I want to travel to Langkawi Island.",
+     "zh": "我想去浮罗交怡岛旅游。"
+    },
+    {
+     "bm": "Berapakah harga pakej pelancongan ini?",
+     "en": "How much is this tour package?",
+     "zh": "这个旅游配套多少钱？",
+     "cloze": "Berapakah",
+     "opts": [
+      "Berapakah",
+      "Siapakah",
+      "Bilakah"
+     ]
+    },
+    {
+     "bm": "Gunung Kinabalu terletak di negeri Sabah.",
+     "en": "Mount Kinabalu is in Sabah.",
+     "zh": "京那巴鲁山位于沙巴。",
+     "cloze": "Sabah",
+     "opts": [
+      "Sabah",
+      "Sarawak",
+      "Perak"
+     ]
+    },
+    {
+     "bm": "Menara Berkembar Petronas terletak di Kuala Lumpur.",
+     "en": "The Petronas Twin Towers are in Kuala Lumpur.",
+     "zh": "双峰塔位于吉隆坡。",
+     "cloze": "Kuala Lumpur",
+     "opts": [
+      "Kuala Lumpur",
+      "Melaka",
+      "Pulau Pinang"
+     ]
+    },
+    {
+     "bm": "Kota A Famosa terletak di negeri Melaka.",
+     "en": "A Famosa fort is in Melaka.",
+     "zh": "法摩沙堡位于马六甲。",
+     "cloze": "Melaka",
+     "opts": [
+      "Melaka",
+      "Kedah",
+      "Johor"
+     ]
+    },
+    {
+     "bm": "Saya suka berenang di pantai.",
+     "en": "I like to swim at the beach.",
+     "zh": "我喜欢在海滩游泳。"
+    },
+    {
+     "bm": "Di manakah hotel bajet di sini?",
+     "en": "Where are the budget hotels here?",
+     "zh": "这里的廉价酒店在哪里？"
+    },
+    {
+     "bm": "Pemandangan di puncak gunung sangat cantik.",
+     "en": "The view at the mountain peak is very beautiful.",
+     "zh": "山顶的风景很漂亮。"
+    }
+   ],
+   "dialogues": [
+    {
+     "lines": [
+      [
+       "Wei",
+       "Saya mahu bercuti hujung minggu ini. Ada cadangan?"
+      ],
+      [
+       "Aisyah",
+       "Pergi ke Pulau Langkawi. Di sana ada pantai dan air terjun."
+      ],
+      [
+       "Wei",
+       "Berapakah harga pakej tiga hari dua malam?"
+      ],
+      [
+       "Aisyah",
+       "Lebih kurang lima ratus ringgit, termasuk hotel."
+      ],
+      [
+       "Wei",
+       "Boleh tahan. Bagaimana saya ke sana?"
+      ],
+      [
+       "Aisyah",
+       "Naik feri dari Kuala Perlis."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Ke manakah Aisyah mencadangkan Wei pergi?",
+       "opts": [
+        "Pulau Langkawi",
+        "Gunung Kinabalu",
+        "Melaka"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Berapakah harga pakej itu?",
+       "opts": [
+        "Tiga ratus ringgit",
+        "Lima ratus ringgit",
+        "Seribu ringgit"
+       ],
+       "a": 1
+      },
+      {
+       "q": "Bagaimanakah Wei akan ke sana?",
+       "opts": [
+        "Naik feri",
+        "Naik kapal terbang",
+        "Naik bas"
+       ],
+       "a": 0
+      }
+     ]
+    },
+    {
+     "lines": [
+      [
+       "Pelancong",
+       "Di manakah tempat yang paling menarik di Sabah?"
+      ],
+      [
+       "Ejen",
+       "Gunung Kinabalu. Ramai pelancong datang untuk mendaki."
+      ],
+      [
+       "Pelancong",
+       "Ada tempat untuk menyelam?"
+      ],
+      [
+       "Ejen",
+       "Ada. Pulau Sipadan terkenal di seluruh dunia."
+      ],
+      [
+       "Pelancong",
+       "Baik. Saya mahu pakej yang ada kedua-duanya."
+      ]
+     ],
+     "qs": [
+      {
+       "q": "Apakah aktiviti di Gunung Kinabalu?",
+       "opts": [
+        "Mendaki",
+        "Menyelam",
+        "Berenang di kolam"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Pulau manakah yang terkenal untuk menyelam?",
+       "opts": [
+        "Pulau Sipadan",
+        "Pulau Langkawi",
+        "Pulau Pinang"
+       ],
+       "a": 0
+      },
+      {
+       "q": "Di negeri manakah kedua-dua tempat itu?",
+       "opts": [
+        "Sabah",
+        "Sarawak",
+        "Pahang"
+       ],
+       "a": 0
+      }
+     ]
+    }
+   ],
+   "soalan": [
+    {
+     "q": "Apakah nama gunung tertinggi di Malaysia?",
+     "opts": [
+      "Gunung Kinabalu",
+      "Gunung Tahan",
+      "Bukit Bendera"
+     ],
+     "a": "Gunung Kinabalu",
+     "why": "Gunung Kinabalu di Sabah ialah gunung tertinggi di Malaysia.",
+     "title": "Destinasi"
+    },
+    {
+     "q": "Di negeri manakah Gunung Kinabalu?",
+     "opts": [
+      "Sabah",
+      "Sarawak",
+      "Pahang"
+     ],
+     "a": "Sabah",
+     "title": "Destinasi"
+    },
+    {
+     "q": "Bangunan berkembar yang terkenal di ibu negara?",
+     "opts": [
+      "Menara Berkembar Petronas",
+      "Kota A Famosa",
+      "Bukit Bendera"
+     ],
+     "a": "Menara Berkembar Petronas",
+     "why": "Menara Berkembar Petronas terletak di Kuala Lumpur.",
+     "title": "Destinasi"
+    },
+    {
+     "q": "Di negeri manakah Kota A Famosa?",
+     "opts": [
+      "Melaka",
+      "Johor",
+      "Perak"
+     ],
+     "a": "Melaka",
+     "why": "Kota A Famosa ialah kubu bersejarah di Melaka.",
+     "title": "Destinasi"
+    },
+    {
+     "q": "Di negeri manakah Pulau Langkawi?",
+     "opts": [
+      "Kedah",
+      "Perlis",
+      "Pulau Pinang"
+     ],
+     "a": "Kedah",
+     "title": "Destinasi"
+    },
+    {
+     "q": "Pulau manakah terkenal untuk menyelam di Sabah?",
+     "opts": [
+      "Pulau Sipadan",
+      "Pulau Langkawi",
+      "Pulau Pangkor"
+     ],
+     "a": "Pulau Sipadan",
+     "title": "Destinasi"
+    },
+    {
+     "q": "Di negeri manakah Bukit Bendera?",
+     "opts": [
+      "Pulau Pinang",
+      "Kedah",
+      "Melaka"
+     ],
+     "a": "Pulau Pinang",
+     "title": "Destinasi"
+    },
+    {
+     "q": "Aktiviti naik ke puncak gunung dipanggil apa?",
+     "opts": [
+      "Mendaki",
+      "Menyelam",
+      "Berenang"
+     ],
+     "a": "Mendaki",
+     "title": "Aktiviti"
+    }
+   ],
+   "tanya": [
+    {
+     "q": "Apakah nama gunung tertinggi di Malaysia?",
+     "a": [
+      "gunung kinabalu",
+      "kinabalu"
+     ]
+    },
+    {
+     "q": "Di negeri manakah Kota A Famosa?",
+     "a": [
+      "melaka"
+     ]
+    },
+    {
+     "q": "Di negeri manakah Pulau Langkawi?",
+     "a": [
+      "kedah"
+     ]
+    },
+    {
+     "q": "Apakah nama bangunan berkembar yang terkenal di Kuala Lumpur?",
+     "a": [
+      "menara berkembar petronas",
+      "petronas",
+      "menara berkembar"
+     ]
+    },
+    {
+     "q": "Orang yang melawat tempat menarik untuk bercuti dipanggil apa?",
+     "a": [
+      "pelancong"
+     ]
+    },
+    {
+     "q": "Di manakah pelancong tidur semasa bercuti?",
+     "a": [
+      "hotel"
+     ]
+    },
+    {
+     "q": "Apakah nama aktiviti naik ke puncak gunung?",
+     "a": [
+      "mendaki"
+     ]
+    }
+   ]
+  }
+ ]
+}</script>
+
+<script>
+(() => {
+'use strict';
+const BANK = JSON.parse(document.getElementById('bank').textContent);
+const CFG = BANK.config;
+const LS = {
+  get:(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+const $ = (s,r=document)=>r.querySelector(s);
+const esc = s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle = a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const take = (arr,n)=>{let out=[];if(!arr||!arr.length)return out;while(out.length<n)out=out.concat(shuffle(arr));return out.slice(0,n)};
+const norm = s=>String(s).toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+const lev = (a,b)=>{const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>[i].concat(Array(n).fill(0)));
+  for(let j=1;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[m][n]};
+const overlap = (a,b)=>{const A=norm(a).split(' ').filter(Boolean),B=norm(b).split(' ').filter(Boolean);
+  if(!A.length||!B.length)return 0;const pool=[...B];let hit=0;
+  for(const w of A){const k=pool.indexOf(w);if(k>-1){hit++;pool.splice(k,1)}}
+  return hit/Math.max(A.length,B.length)};
+
+/* ---------- Keupayaan peranti ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const hasSR = !!SR;
+const hasTTS = 'speechSynthesis' in window;
+function voices(){try{return hasTTS?speechSynthesis.getVoices():[]}catch(e){return []}}
+function pickVoice(){const v=voices();return v.find(x=>/^ms[-_]/i.test(x.lang))||v.find(x=>/^id[-_]/i.test(x.lang))||null}
+function ttsOK(){if(!hasTTS)return false;const v=voices();return v.length===0||!!pickVoice()}
+function say(text){
+  if(!hasTTS||!text)return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const v=pickVoice();
+    if(v){u.voice=v;u.lang=v.lang}else u.lang='ms-MY';u.rate=.85;speechSynthesis.speak(u)}catch(e){}
+}
+if(hasTTS){try{speechSynthesis.onvoiceschanged=()=>{}}catch(e){}}
+
+/* ---------- Keadaan ---------- */
+const S = {
+  screen:'login', user:LS.get('jb_user',null), lang:LS.get('jb_lang','en'),
+  topic:null, level:1, qs:[], i:0, n:0, res:[], t0:0, done:false, sendState:''
+};
+const gloss = w => S.lang==='zh' ? (w.zh+(w.py?` (${w.py})`:'')) : w.en;
+const glossS = s => S.lang==='zh' ? s.zh : s.en;
+
+/* ---------- Pembina soalan ---------- */
+function distract(w,words,n){
+  const same=words.filter(x=>x.bm!==w.bm&&x.g===w.g), other=words.filter(x=>x.bm!==w.bm&&x.g!==w.g);
+  return shuffle(same).concat(shuffle(other)).slice(0,n);
+}
+function optsFor(w,words,fn){const arr=shuffle([w].concat(distract(w,words,3)));return{opts:arr.map(fn),a:arr.indexOf(w)}}
+const ans = w=>[w.bm].concat(w.alt||[]);
+const gap = s=>s.bm.replace(new RegExp('\\b'+s.cloze+'\\b','i'),'_____');
+
+const B = {
+ /* Tahap 1: makna dibina di sini, jadi hanya di sini terjemahan muncul penuh. */
+ 'baca-fwd':(t,n)=>take(t.words,n).map(w=>{const o=optsFor(w,t.words,gloss);
+   return{skill:'baca',type:'mcq',title:'Baca',prompt:'Apakah maksud perkataan ini?',big:w.bm,emoji:w.e,opts:o.opts,a:o.a,why:`${w.bm} = ${gloss(w)}`}}),
+ 'dengar-mcq':(t,n)=>take(t.words,n).map(w=>{const o=optsFor(w,t.words,x=>x.bm);
+   return{skill:'dengar',type:'mcq',title:'Dengar',prompt:'Dengar, kemudian pilih perkataan yang betul.',audio:w.bm,opts:o.opts,a:o.a,why:w.bm,reveal:w.bm}}),
+ 'cakap-word':(t,n)=>take(t.words,n).map(w=>({skill:'cakap',type:'speak',title:'Cakap',prompt:'Tekan butang mikrofon, kemudian sebut perkataan ini.',big:w.bm,emoji:w.e,audio:w.bm,target:w.bm,alts:w.alt||[],word:true,help:gloss(w),
+   fallback:{big:w.e?'':gloss(w),sub:w.e?gloss(w):'',emoji:w.e,answers:ans(w),prompt:'Tulis perkataan itu dalam Bahasa Melayu.'}})),
+ 'tulis-word':(t,n)=>take(t.words,n).map(w=>({skill:'tulis',type:'type',title:'Tulis',prompt:'Tulis perkataan ini dalam Bahasa Melayu.',big:w.e?'':gloss(w),sub:w.e?gloss(w):'',emoji:w.e,answers:ans(w)})),
+ 'dengar-type':(t,n)=>take(t.words,n).map(w=>({skill:'dengar',type:'type',title:'Dengar dan tulis',prompt:'Dengar, kemudian tulis perkataan itu.',audio:w.bm,answers:ans(w),reveal:w.bm,help:gloss(w)})),
+ /* Tahap 2 dan 3: skrin Bahasa Melayu sahaja. Maksud di belakang butang. */
+ 'cloze':(t,n)=>take(t.sentences.filter(s=>s.cloze),n).map(s=>{const opts=shuffle(s.opts);
+   return{skill:'baca',type:'mcq',title:'Baca',prompt:'Pilih perkataan yang sesuai.',big:gap(s),opts,a:opts.findIndex(o=>norm(o)===norm(s.cloze)),why:s.bm,help:glossS(s)}}),
+ 'khas':(t,n)=>take(t.soalan||[],n).map(x=>{const ai=x.opts.indexOf(x.a),sh=shuffle(x.opts.map((o,i)=>i));
+   return{skill:x.skill||'baca',type:'mcq',title:x.title||'Tatabahasa',prompt:x.q,opts:sh.map(i=>x.opts[i]),a:sh.indexOf(ai),why:x.why||''}}),
+ 'order-audio':(t,n)=>take(t.sentences,n).map(s=>({skill:'tulis',type:'order',title:'Dengar dan susun',prompt:'Dengar ayat itu, kemudian susun perkataan.',audio:s.bm,tiles:shuffle(s.bm.replace(/[.?!,]/g,'').split(' ')),answer:s.bm,help:glossS(s)})),
+ 'order':(t,n)=>take(t.sentences,n).map(s=>({skill:'tulis',type:'order',title:'Susun ayat',prompt:'Susun perkataan menjadi ayat yang betul.',sub:glossS(s),tiles:shuffle(s.bm.replace(/[.?!,]/g,'').split(' ')),answer:s.bm})),
+ 'dialog':(t,n)=>{let all=[];shuffle(t.dialogues).forEach(d=>d.qs.forEach(q=>{const idx=q.opts.map((o,i)=>i),sh=shuffle(idx);
+     all.push({skill:'baca',type:'mcq',title:'Baca perbualan',prompt:q.q,dialog:d.lines,opts:sh.map(i=>q.opts[i]),a:sh.indexOf(q.a),why:q.why||''})}));
+   return all.slice(0,n)},
+ 'dengar-sent':(t,n)=>take(t.sentences,n).map(s=>({skill:'dengar',type:'type',title:'Dengar dan tulis',prompt:'Dengar, kemudian tulis ayat itu.',audio:s.bm,answers:[s.bm],sentence:true,fuzzy:true,reveal:s.bm,help:glossS(s)})),
+ 'cakap-sent':(t,n)=>take(t.sentences,n).map(s=>({skill:'cakap',type:'speak',title:'Cakap',prompt:'Tekan butang mikrofon, kemudian baca ayat ini.',big:s.bm,audio:s.bm,target:s.bm,sentence:true,help:glossS(s),
+   fallback:{big:glossS(s),answers:[s.bm],sentence:true,fuzzy:true,prompt:'Tulis ayat ini dalam Bahasa Melayu.'}})),
+ 'tanya':(t,n)=>take(t.tanya||[],n).map(x=>({skill:'tulis',type:'type',title:'Jawab dalam Bahasa Melayu',prompt:x.q,dialog:x.lines,answers:x.a,short:true}))
+};
+const PLAN = {
+  1:[['baca-fwd',3],['dengar-mcq',3],['tulis-word',2],['cakap-word',2]],
+  2:[['tulis-word',3],['dengar-type',2],['cloze',1],['khas',1],['order-audio',1],['cakap-word',2]],
+  3:[['dialog',3],['dengar-sent',2],['cakap-sent',3],['tanya',2]]
+};
+function remap(k){
+  if(!hasSR){ if(k==='cakap-word')return'tulis-word'; if(k==='cakap-sent')return ttsOK()?'dengar-sent':'khas'; }
+  if(!ttsOK()){ if(k==='dengar-mcq')return'baca-fwd'; if(k==='dengar-type')return'tulis-word'; if(k==='dengar-sent')return'tanya'; if(k==='order-audio')return'order'; }
+  return k;
+}
+function dedup(qs){
+  const seen=new Set();
+  return qs.filter(q=>{const key=q.type+'|'+(q.big||'')+'|'+(q.audio||'')+'|'+q.prompt+'|'+(q.sub||'');
+    if(seen.has(key))return false;seen.add(key);return true});
+}
+/* Jenis simpanan: dipakai apabila peranti tiada suara atau mikrofon, supaya tetap genap 10 soalan. */
+const SPARE={1:['baca-fwd','tulis-word'],2:['khas','cloze','order','tulis-word'],3:['dialog','tanya','khas','cloze']};
+function buildRound(t,level){
+  const want=CFG.roundSize||10;
+  let qs=[];
+  for(const [k,n] of PLAN[level]) qs=qs.concat(B[remap(k)](t,n));
+  qs=dedup(qs);
+  let guard=0;
+  while(qs.length<want && guard++<10){
+    const before=qs.length;
+    for(const k of SPARE[level]){ qs=dedup(qs.concat(B[remap(k)](t,2))); if(qs.length>=want) break; }
+    if(qs.length===before) break;
+  }
+  return qs.slice(0,want);
+}
+
+/* ---------- Kemajuan dan markah ---------- */
+const prog = ()=>LS.get('jb_prog',{});
+const starsFor = p => p>=90?3:p>=70?2:p>=50?1:0;
+async function sendScore(p){
+  if(!CFG.scoreUrl) return 'demo';
+  try{
+    await fetch(CFG.scoreUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)});
+    return 'sent';
+  }catch(e){const q=LS.get('jb_queue',[]);q.push(p);LS.set('jb_queue',q);return 'queued'}
+}
+async function flushQueue(){
+  const q=LS.get('jb_queue',[]);if(!q.length||!CFG.scoreUrl)return;
+  const left=[];for(const p of q){try{await fetch(CFG.scoreUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)})}catch(e){left.push(p)}}
+  LS.set('jb_queue',left);
+}
+
+/* ---------- Paparan ---------- */
+const app = $('#app');
+const MASCOT = `<svg viewBox="0 0 120 108" width="92" height="83" aria-hidden="true" style="flex:0 0 auto">
+ <path d="M16 6h88a12 12 0 0 1 12 12v54a12 12 0 0 1-12 12H56L30 100l3-16H16A12 12 0 0 1 4 72V18A12 12 0 0 1 16 6z" fill="#0B4EA2"/>
+ <circle cx="44" cy="42" r="9" fill="#fff"/><circle cx="78" cy="42" r="9" fill="#fff"/>
+ <circle cx="47" cy="44" r="4.5" fill="#07356F"/><circle cx="81" cy="44" r="4.5" fill="#07356F"/>
+ <path d="M44 62q17 15 34 0" stroke="#FFC20E" stroke-width="7" fill="none" stroke-linecap="round"/>
+ <circle cx="24" cy="28" r="5" fill="#FFC20E"/></svg>`;
+function render(){
+  if(S.screen==='login') return renderLogin();
+  if(S.screen==='home') return renderHome();
+  if(S.screen==='play') return renderPlay();
+  if(S.screen==='done') return renderDone();
+}
+function langSeg(){
+  const L=[['en','English'],['zh','中文']];
+  return `<div class="help"><span>Bantuan</span><div class="seg" role="group" aria-label="Bahasa bantuan">${
+    L.map(([k,n])=>`<button data-act="lang" data-v="${k}" aria-pressed="${S.lang===k}">${n}</button>`).join('')}</div></div>`;
+}
+function renderLogin(){
+  const u=S.user||{nama:'',id:''};
+  app.innerHTML=`
+   <div class="hero" style="margin-top:26px">${MASCOT}
+     <div><h1>Jom Bahasa</h1><p>SMB11002 Bahasa Melayu Asas</p></div></div>
+   <div class="note box" style="margin:0 2px 6px">Baca, dengar, tulis dan cakap. Sepuluh topik, tiga tahap.</div>
+   <label for="nama">Nama penuh</label>
+   <input type="text" id="nama" autocomplete="name" value="${esc(u.nama)}">
+   <label for="uid">ID pelajar atau emel</label>
+   <input type="text" id="uid" autocomplete="username" value="${esc(u.id)}">
+   <div class="row"><button class="btn" data-act="login">Mula belajar</button></div>
+   <div class="note" id="loginerr" role="alert"></div>`;
+}
+function renderHome(){
+  const pr=prog();
+  const mic = hasSR ? 'Mikrofon boleh digunakan. Benarkan akses apabila pelayar bertanya.' : 'Pelayar ini tidak menyokong pengecaman suara, jadi soalan cakap ditukar kepada soalan tulis. Gunakan Chrome untuk mencuba keempat-empat kemahiran.';
+  const snd = !hasTTS ? 'Suara tidak disokong dalam pelayar ini.' : (ttsOK() ? 'Suara tersedia.' : 'Suara Bahasa Melayu tiada pada peranti ini, jadi soalan dengar ditukar kepada soalan baca.');
+  const done=Object.keys(pr).length, all=BANK.topics.length*3;
+  app.innerHTML=`
+   <div class="bar"><div class="me"><div class="av">${esc((S.user.nama[0]||'?').toUpperCase())}</div><b>${esc(S.user.nama)}</b></div>${langSeg()}</div>
+   <div class="hero">${MASCOT}<div><h1>Apa khabar!</h1><p>Anda sudah cuba ${done} daripada ${all} tahap.</p></div></div>
+   <div class="topics">
+   ${BANK.topics.map(t=>`
+     <section class="tcard" aria-label="${esc(t.title)}">
+       <div class="head"><div class="ic" aria-hidden="true">${t.emoji||'📘'}</div>
+         <div><span class="wk">Minggu ${t.minggu||'-'}</span><h3>${esc(t.title)}</h3>
+         <div class="rk">${esc(t.ringkas||'')}</div></div></div>
+       <div class="lv">${[1,2,3].map(l=>{const p=pr[t.id+'-'+l];const st=p?'★'.repeat(p.stars)+'☆'.repeat(3-p.stars):'';
+         return `<button data-act="start" data-t="${t.id}" data-l="${l}"><span class="st" aria-label="${p?p.stars+' bintang':'belum dicuba'}">${st}</span>Tahap ${l}<small>${['Kenal','Guna','Fikir'][l-1]}</small></button>`}).join('')}</div>
+     </section>`).join('')}
+   </div>
+   <div class="note box">${esc(mic)}<br>${esc(snd)}</div>
+   <div class="row"><button class="btn ghost sm" data-act="logout">Tukar pengguna</button></div>`;
+}
+function dots(){
+  let h='';for(let k=0;k<S.n;k++){const r=S.res[k];h+=`<i class="${r?(r.ok?'done':'bad'):(k===S.res.length?'now':'')}"></i>`}
+  return `<div class="prog" aria-label="Soalan ${Math.min(S.res.length+1,S.n)} daripada ${S.n}">${h}</div>`;
+}
+let order={pool:[],ans:[]};
+function renderPlay(){
+  const q=S.qs[S.i];S.done=false;
+  const dlg=q.dialog?`<div class="dlg">${q.dialog.map(l=>`<p><b>${esc(l[0])}:</b> ${esc(l[1])}</p>`).join('')}</div>`:'';
+  const helpBtn=q.help?`<button class="chipbtn soft" data-act="help">Maksud?</button>`:'';
+  const hear=(q.audio||helpBtn)?`<div class="row" style="margin:14px 0 0">${
+     q.audio?`<button class="chipbtn" data-act="say" aria-label="Dengar">🔊 Dengar</button>`:''}${
+     q.audio&&q.reveal?`<button class="chipbtn soft" data-act="reveal">Tiada bunyi? Tunjuk teks</button>`:''}${helpBtn}</div>`:'';
+  let body='';
+  if(q.type==='mcq') body=q.opts.map((o,i)=>`<button class="opt" data-act="pick" data-i="${i}">${esc(o)}</button>`).join('');
+  if(q.type==='type') body=`<input type="text" id="ans" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Jawapan anda"><div class="row"><button class="btn" data-act="check">Semak</button></div>`;
+  if(q.type==='order'){order={pool:q.tiles.map((t,i)=>({t,i})),ans:[]};
+    body=`<div class="tiles" id="ans-area" aria-label="Ayat anda"></div><div class="tiles pool" id="pool-area"></div><div class="row"><button class="btn" data-act="check">Semak</button><button class="btn ghost" data-act="reset">Set semula</button></div>`}
+  if(q.type==='speak') body=`<div class="row"><button class="btn blue" data-act="listen" id="micbtn">🎤 Tekan dan sebut</button></div><div id="heard" class="note" role="status"></div>`;
+  app.innerHTML=`
+   <div class="bar"><div class="me"><span class="wk" style="margin:0">Tahap ${S.level}</span><b>${esc(S.topic.title)}</b></div>
+     <button class="btn ghost sm" data-act="home">Keluar</button></div>
+   ${dots()}
+   <div class="qcard">
+     <span class="chip ${q.retry?'retry':''}">${q.retry?'Cuba lagi · ':''}${esc(q.title)}</span>
+     <div class="ask">${esc(q.prompt)}</div>
+     ${q.emoji?`<div class="emoji" aria-hidden="true">${q.emoji}</div>`:''}
+     ${q.big?`<div class="big" id="bigtxt">${esc(q.big)}</div>`:''}
+     ${q.sub?`<div class="sub">${esc(q.sub)}</div>`:''}
+     ${dlg}${hear}<div id="helptext"></div>
+   </div>
+   ${body}
+   <div id="fb"></div>`;
+  if(q.type==='order') drawOrder();
+  if(q.type==='type'){const el=$('#ans');el&&el.focus()}
+  if(q.audio&&q.type!=='speak') setTimeout(()=>say(q.audio),250);
+}
+function drawOrder(){
+  $('#ans-area').innerHTML=order.ans.map((x,k)=>`<button class="tile" data-act="untile" data-k="${k}">${esc(x.t)}</button>`).join('');
+  $('#pool-area').innerHTML=order.pool.map((x,k)=>`<button class="tile" data-act="tile" data-k="${k}">${esc(x.t)}</button>`).join('');
+}
+function finishAnswer(ok,msg,kind){
+  if(S.done)return;S.done=true;
+  const q=S.qs[S.i];
+  if(!q.retry){S.res.push({skill:q.skill,ok});}
+  if(!ok&&!q.retry){S.qs.push(Object.assign({},q,{retry:true}))}
+  $('#fb').innerHTML=`<div class="fb ${kind||(ok?'ok':'no')}" role="status">${msg}</div><div class="row"><button class="btn" data-act="next">${S.i+1<S.qs.length?'Seterusnya':'Lihat markah'}</button></div>`;
+  const nb=$('[data-act=next]');nb&&nb.focus();
+}
+function lockMcq(chosen,q){
+  document.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===q.a)b.classList.add('ok');else if(i===chosen)b.classList.add('no')});
+}
+function checkText(q){
+  const raw=($('#ans').value||'').trim();if(!raw){return}
+  const n=norm(raw);const targets=q.answers.map(norm);
+  let ok=targets.includes(n),near=false;
+  if(!ok&&q.short) ok=targets.some(t=>new RegExp('(^|\\s)'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'($|\\s)').test(n));
+  if(!ok&&q.fuzzy){const best=Math.max(...q.answers.map(a=>overlap(raw,a)));if(best>=.8){ok=true;near=true}}
+  const model=q.answers[0];
+  $('#ans').disabled=true;
+  finishAnswer(ok, ok?(near?`Hampir betul. Ayat contoh: <b>${esc(model)}</b>`:'Betul!'):`Jawapan: <b>${esc(model)}</b>`);
+}
+function checkOrder(q){
+  if(order.pool.length)return;
+  const got=order.ans.map(x=>x.t).join(' '),want=q.answer.replace(/[.?!,]/g,'');
+  const ok=norm(got)===norm(want);
+  finishAnswer(ok, ok?'Betul!':`Ayat yang betul: <b>${esc(q.answer)}</b>`);
+}
+function listen(q){
+  const btn=$('#micbtn'),out=$('#heard');
+  const r=new SR();r.lang='ms-MY';r.interimResults=false;r.maxAlternatives=3;
+  let finished=false;
+  btn.disabled=true;out.textContent='Mendengar... sebut sekarang.';
+  const end=(err,alts)=>{
+    if(finished)return;finished=true;btn.disabled=false;
+    if(err){
+      if(err==='no-speech'||err==='aborted'){out.textContent='Tidak dengar apa-apa. Tekan butang mikrofon dan cuba lagi.';return}
+      toTyping(q);return;
+    }
+    const best=alts.map(a=>a.trim());
+    let ok=false;
+    for(const h of best)for(const t of [q.target].concat(q.alts||[])){
+      const nh=norm(h),nt=norm(t);
+      if(q.word){ if(nh.includes(nt)||(nt.indexOf(' ')<0&&nh.split(' ').some(w=>lev(w,nt)<=1)))ok=true }
+      else if(overlap(h,t)>=.7)ok=true;
+    }
+    out.textContent='';
+    finishAnswer(ok, ok?`Bagus! Dengar: <i>${esc(best[0])}</i>`:`Dengar: <i>${esc(best[0]||'-')}</i>. Sasaran: <b>${esc(q.target)}</b>. Tekan 🔊 untuk dengar contoh, kemudian cuba soalan seterusnya.`);
+  };
+  r.onresult=e=>end(null,Array.from(e.results[0]).map(a=>a.transcript));
+  r.onerror=e=>end(e.error||'error');
+  r.onend=()=>end('no-speech');
+  try{r.start()}catch(e){end('error')}
+}
+function toTyping(q){
+  const f=q.fallback;if(!f)return;
+  S.qs[S.i]=Object.assign({},q,{skill:'tulis',type:'type',title:'Tulis',prompt:'Mikrofon tidak tersedia. '+f.prompt,big:f.big,sub:f.sub||'',emoji:f.emoji,answers:f.answers,sentence:f.sentence,fuzzy:!!f.fuzzy,short:false,audio:null,help:null,fallback:null});
+  renderPlay();
+}
+function next(){
+  if(S.i+1<S.qs.length){S.i++;renderPlay()}else finishRound();
+}
+async function finishRound(){
+  const tally={baca:[0,0],dengar:[0,0],tulis:[0,0],cakap:[0,0]};
+  S.res.forEach(r=>{tally[r.skill][1]++;if(r.ok)tally[r.skill][0]++});
+  const right=S.res.filter(r=>r.ok).length,total=S.res.length,pct=Math.round(100*right/Math.max(1,total));
+  const stars=starsFor(pct),key=S.topic.id+'-'+S.level;
+  const pr=prog();const old=pr[key];
+  if(!old||pct>old.pct)pr[key]={pct,stars};LS.set('jb_prog',pr);
+  const payload={kunci:CFG.kunci||'',masa:new Date().toISOString(),nama:S.user.nama,id:S.user.id,topik:S.topic.id,tahap:S.level,peratus:pct,betul:right,jumlah:total,bintang:stars,
+    baca:tally.baca.join('/'),dengar:tally.dengar.join('/'),tulis:tally.tulis.join('/'),cakap:tally.cakap.join('/'),saat:Math.round((Date.now()-S.t0)/1000),bahasa:S.lang};
+  S.summary={pct,stars,tally,right,total};S.screen='done';S.sendState='...';render();
+  S.sendState=await sendScore(payload);
+  const el=$('#sendstate');if(el)el.textContent=sendMsg();
+}
+const sendMsg=()=>({demo:'Mod percubaan: markah disimpan pada peranti ini sahaja.',sent:'Markah telah dihantar kepada pensyarah.','queued':'Tiada talian. Markah akan dihantar semula apabila anda dalam talian.','...':'Menghantar markah...'}[S.sendState]||'');
+function renderDone(){
+  const s=S.summary;const nm={baca:'Baca',dengar:'Dengar',tulis:'Tulis',cakap:'Cakap'};
+  const bars=Object.keys(nm).map(k=>{const [a,b]=s.tally[k];const w=b?Math.round(100*a/b):0;
+    return `<div class="bar2"><span>${nm[k]}</span><i><b style="width:${w}%"></b></i><em>${b?a+'/'+b:'-'}</em></div>`}).join('');
+  const kata=s.stars===3?'Hebat!':s.stars===2?'Bagus!':s.stars===1?'Boleh lagi!':'Cuba sekali lagi.';
+  app.innerHTML=`
+   <div class="bar"><div class="me"><span class="wk" style="margin:0">Tahap ${S.level}</span><b>${esc(S.topic.title)}</b></div>
+     <button class="btn ghost sm" data-act="home">Keluar</button></div>
+   <div class="score">
+     <div class="ring" style="--p:${s.pct}"><b>${s.pct}%</b></div>
+     <div class="stars" aria-label="${s.stars} bintang">${'★'.repeat(s.stars)}${'☆'.repeat(3-s.stars)}</div>
+     <p>${kata} ${s.right} betul pada percubaan pertama, daripada ${s.total} soalan.</p>
+   </div>
+   ${bars}
+   <div class="note" id="sendstate" role="status">${esc(sendMsg())}</div>
+   <div class="row"><button class="btn" data-act="start" data-t="${S.topic.id}" data-l="${S.level}">Main lagi</button>
+   ${S.level<3?`<button class="btn blue" data-act="start" data-t="${S.topic.id}" data-l="${S.level+1}">Tahap ${S.level+1}</button>`:''}
+   <button class="btn ghost" data-act="home">Pilih topik</button></div>`;
+}
+
+/* ---------- Acara ---------- */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const a=el.dataset.act,q=S.qs[S.i];
+  if(a==='lang'){S.lang=el.dataset.v;LS.set('jb_lang',S.lang);render();return}
+  if(a==='login'){const nama=$('#nama').value.trim(),id=$('#uid').value.trim();
+    if(nama.length<2||id.length<2){$('#loginerr').textContent='Isi nama penuh dan ID pelajar atau emel.';return}
+    S.user={nama,id};LS.set('jb_user',S.user);S.screen='home';render();flushQueue();return}
+  if(a==='logout'){S.user=null;LS.set('jb_user',null);S.screen='login';render();return}
+  if(a==='home'){S.screen='home';render();return}
+  if(a==='start'){const t=BANK.topics.find(x=>x.id===el.dataset.t);S.topic=t;S.level=+el.dataset.l;
+    S.qs=buildRound(t,S.level);S.n=S.qs.length;S.i=0;S.res=[];S.t0=Date.now();S.screen='play';render();return}
+  if(a==='say'){say(q.audio);return}
+  if(a==='help'){$('#helptext').innerHTML=esc(q.help);el.remove();return}
+  if(a==='reveal'){q.skill='baca';if(!$('#bigtxt'))el.closest('.qcard').querySelector('.ask').insertAdjacentHTML('afterend',`<div class="big" id="bigtxt">${esc(q.reveal)}</div>`);el.remove();return}
+  if(a==='pick'){if(S.done)return;const i=+el.dataset.i;lockMcq(i,q);finishAnswer(i===q.a,i===q.a?'Betul!':`Jawapan: <b>${esc(q.opts[q.a])}</b>. ${esc(q.why||'')}`);return}
+  if(a==='check'){if(q.type==='type')checkText(q);else if(q.type==='order')checkOrder(q);return}
+  if(a==='tile'){const x=order.pool.splice(+el.dataset.k,1)[0];order.ans.push(x);drawOrder();return}
+  if(a==='untile'){const x=order.ans.splice(+el.dataset.k,1)[0];order.pool.push(x);drawOrder();return}
+  if(a==='reset'){order.pool=order.pool.concat(order.ans);order.ans=[];drawOrder();return}
+  if(a==='listen'){listen(q);return}
+  if(a==='next'){next();return}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&S.screen==='play'){
+    const q=S.qs[S.i];
+    if(S.done){next();return}
+    if(q&&q.type==='type'&&document.activeElement&&document.activeElement.id==='ans'){checkText(q)}
+  }
+});
+
+S.screen=S.user?'home':'login';
+render();flushQueue();
+window.__JB={buildRound,BANK,S};
+})();
+</script>
+</body>
+</html>
